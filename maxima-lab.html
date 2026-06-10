@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>MAXIMA LAB — Component Library</title>
+<title>MAXIMA LAB - Component Library</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Instrument+Sans:wght@400;500;600&family=Martian+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* ==========================================================
-   MAXIMA LAB — the component library behind the site
+   MAXIMA LAB - the component library behind the site
    Live demos: announcement bar · mega-menu · breadcrumbs ·
    buttons · badges · avatars · tooltips · popover (Popover
    API + anchor positioning) · <dialog> modal · command
@@ -462,7 +462,7 @@ footer.site a { color: inherit; }
 
 <!-- 01 · ANNOUNCEMENT BAR -->
 <div class="announce" id="announce">
-  <span>LAB v1.0 SHIPPED — EVERY COMPONENT BELOW IS LIVE.</span>
+  <span>LAB v1.0 SHIPPED - EVERY COMPONENT BELOW IS LIVE.</span>
   <a href="#dialogs">JUMP TO DIALOGS →</a>
   <button aria-label="Dismiss announcement" onclick="document.getElementById('announce').classList.add('is-hidden')">✕</button>
 </div>
@@ -504,7 +504,7 @@ footer.site a { color: inherit; }
 
   <div class="content">
     <h1>The Component Lab</h1>
-    <p class="lede">Every primitive the main site doesn't show — live, themed, and built on the newest platform APIs: native <code>&lt;dialog&gt;</code>, the Popover API, CSS anchor positioning, <code>:user-invalid</code>, and scroll-driven reveals. Copy any block into a client build.</p>
+    <p class="lede">Every primitive the main site doesn't show - live, themed, and built on the newest platform APIs: native <code>&lt;dialog&gt;</code>, the Popover API, CSS anchor positioning, <code>:user-invalid</code>, and scroll-driven reveals. Copy any block into a client build.</p>
     <div style="margin-top:1rem;" class="crumbs" aria-label="Breadcrumb">
       <a href="maxima-03-company.html">MAXIMA</a><i>/</i><a href="#">RESOURCES</a><i>/</i><b>COMPONENT LAB</b>
     </div>
@@ -546,9 +546,9 @@ footer.site a { color: inherit; }
     <!-- TOOLTIP + POPOVER -->
     <section class="unit" id="tips">
       <h2><span class="no">03</span>Tooltip &amp; popover</h2>
-      <p class="note">Tooltips are pure CSS via a <code>data-tip</code> attribute. The popover uses the native Popover API — light-dismiss for free — anchored to its trigger with CSS anchor positioning where supported.</p>
+      <p class="note">Tooltips are pure CSS via a <code>data-tip</code> attribute. The popover uses the native Popover API - light-dismiss for free - anchored to its trigger with CSS anchor positioning where supported.</p>
       <div class="demo">
-        <button class="btn ghost" data-tip="Pure CSS — hover or focus me">HOVER FOR TOOLTIP</button>
+        <button class="btn ghost" data-tip="Pure CSS - hover or focus me">HOVER FOR TOOLTIP</button>
         <button class="btn accent" id="pop-anchor-btn" popovertarget="pop-demo">OPEN POPOVER</button>
         <div id="pop-demo" popover>
           <h4>Native popover</h4>
@@ -560,7 +560,7 @@ footer.site a { color: inherit; }
     <!-- DIALOG + PALETTE -->
     <section class="unit" id="dialogs">
       <h2><span class="no">04</span>Dialog &amp; command palette</h2>
-      <p class="note">Native <code>&lt;dialog&gt;</code> with a blurred <code>::backdrop</code> — focus trapping and Esc-to-close come from the browser. The palette is the same element dressed as a ⌘K launcher with live filtering.</p>
+      <p class="note">Native <code>&lt;dialog&gt;</code> with a blurred <code>::backdrop</code> - focus trapping and Esc-to-close come from the browser. The palette is the same element dressed as a ⌘K launcher with live filtering.</p>
       <div class="demo">
         <button class="btn solid" id="open-modal">OPEN MODAL</button>
         <button class="btn ghost" onclick="document.getElementById('open-palette').click()">OPEN ⌘K PALETTE</button>
@@ -579,7 +579,7 @@ footer.site a { color: inherit; }
             <button role="tab" aria-selected="false" aria-controls="tp3" id="tab3" tabindex="-1">SHIP</button>
           </div>
           <div class="tabpanel" id="tp1" role="tabpanel" aria-labelledby="tab1">Two weeks of interviews and audits. We find the one move that changes your trajectory before anyone opens a design tool.</div>
-          <div class="tabpanel" id="tp2" role="tabpanel" aria-labelledby="tab2" hidden>Brand direction, architecture, and a clickable prototype tested with real users — approve a thing you can touch.</div>
+          <div class="tabpanel" id="tp2" role="tabpanel" aria-labelledby="tab2" hidden>Brand direction, architecture, and a clickable prototype tested with real users - approve a thing you can touch.</div>
           <div class="tabpanel" id="tp3" role="tabpanel" aria-labelledby="tab3" hidden>Weekly releases to production from day one, with design and engineering in the same standup.</div>
         </div>
       </div>
@@ -592,14 +592,14 @@ footer.site a { color: inherit; }
       <div class="demo">
         <button class="btn ghost" onclick="toast('Saved', 'Your changes are live.', 'var(--ok)')">SUCCESS TOAST</button>
         <button class="btn ghost" onclick="toast('Heads up', 'Your trial ends in 3 days.', 'var(--solar)')">WARNING TOAST</button>
-        <button class="btn ghost" onclick="toast('Deploy failed', 'Build #214 — rollback started.', 'var(--vermilion)')">ERROR TOAST</button>
+        <button class="btn ghost" onclick="toast('Deploy failed', 'Build #214 - rollback started.', 'var(--vermilion)')">ERROR TOAST</button>
       </div>
     </section>
 
     <!-- FORMS -->
     <section class="unit" id="forms">
       <h2><span class="no">07</span>Forms, validation &amp; wizard</h2>
-      <p class="note">Validation styling uses <code>:user-invalid</code> — errors appear only after you've actually touched a field, no JavaScript. The wizard is a three-step flow with progress.</p>
+      <p class="note">Validation styling uses <code>:user-invalid</code> - errors appear only after you've actually touched a field, no JavaScript. The wizard is a three-step flow with progress.</p>
       <div class="formgrid">
         <form class="panelbox" onsubmit="event.preventDefault(); toast('Welcome back', 'Signed in as demo@maxima.studio', 'var(--ok)')">
           <h3>Sign in</h3>
@@ -617,7 +617,7 @@ footer.site a { color: inherit; }
 
         <form class="panelbox wizard" id="wizard" onsubmit="event.preventDefault();">
           <h3>Project wizard</h3>
-          <div class="wizdots"><i class="on"></i><i></i><i></i><span id="wizlabel">STEP 1 OF 3 — BASICS</span></div>
+          <div class="wizdots"><i class="on"></i><i></i><i></i><span id="wizlabel">STEP 1 OF 3 - BASICS</span></div>
           <fieldset data-step="1">
             <label class="field">Project name<input type="text" placeholder="Apollo redesign"></label>
             <label class="field">Company<input type="text" placeholder="Acme Inc."></label>
@@ -653,11 +653,11 @@ footer.site a { color: inherit; }
           </thead>
           <tbody>
             <tr><td class="feat">Live client dashboard</td><td class="y">✓</td><td class="y col-hot">✓</td><td class="y">✓</td></tr>
-            <tr><td class="feat">Dedicated pod</td><td class="n">—</td><td class="y col-hot">✓</td><td class="y">✓</td></tr>
-            <tr><td class="feat">Weekly production releases</td><td class="n">—</td><td class="y col-hot">✓</td><td class="y">✓</td></tr>
-            <tr><td class="feat">48-hour hotfix SLA</td><td class="n">—</td><td class="y col-hot">✓</td><td class="y">✓</td></tr>
-            <tr><td class="feat">Fractional leadership</td><td class="n">—</td><td class="n col-hot">—</td><td class="y">✓</td></tr>
-            <tr><td class="feat">Hiring &amp; team build-out</td><td class="n">—</td><td class="n col-hot">—</td><td class="y">✓</td></tr>
+            <tr><td class="feat">Dedicated pod</td><td class="n">-</td><td class="y col-hot">✓</td><td class="y">✓</td></tr>
+            <tr><td class="feat">Weekly production releases</td><td class="n">-</td><td class="y col-hot">✓</td><td class="y">✓</td></tr>
+            <tr><td class="feat">48-hour hotfix SLA</td><td class="n">-</td><td class="y col-hot">✓</td><td class="y">✓</td></tr>
+            <tr><td class="feat">Fractional leadership</td><td class="n">-</td><td class="n col-hot">-</td><td class="y">✓</td></tr>
+            <tr><td class="feat">Hiring &amp; team build-out</td><td class="n">-</td><td class="n col-hot">-</td><td class="y">✓</td></tr>
           </tbody>
         </table>
       </div>
@@ -666,7 +666,7 @@ footer.site a { color: inherit; }
     <!-- FEEDBACK -->
     <section class="unit" id="feedback">
       <h2><span class="no">09</span>Feedback states</h2>
-      <p class="note">Progress, shimmering skeleton, spinner, and an empty state — the unglamorous 80% of real product UI.</p>
+      <p class="note">Progress, shimmering skeleton, spinner, and an empty state - the unglamorous 80% of real product UI.</p>
       <div class="demo stack" style="gap:1.6rem;">
         <div style="display:grid; gap:.5rem;">
           <div class="bar"><i style="--v:72%"></i></div>
@@ -710,7 +710,7 @@ footer.site a { color: inherit; }
     <!-- MEDIA -->
     <section class="unit" id="media">
       <h2><span class="no">11</span>Gallery, video &amp; carousel</h2>
-      <p class="note">The gallery opens a <code>&lt;dialog&gt;</code> lightbox. The carousel is scroll-snap underneath with arrows and dots layered on — swipe still works on touch.</p>
+      <p class="note">The gallery opens a <code>&lt;dialog&gt;</code> lightbox. The carousel is scroll-snap underneath with arrows and dots layered on - swipe still works on touch.</p>
       <div class="demo stack" style="gap:1.6rem;">
         <div class="gallery">
           <button class="g1" data-cap="Ultraviolet study · 01" aria-label="Open image 1"></button>
@@ -746,7 +746,7 @@ footer.site a { color: inherit; }
       <div class="notfound">
         <div class="code">404</div>
         <h3>This page ricocheted away</h3>
-        <p>The comet checked everywhere — whatever was here has moved, shipped, or never existed.</p>
+        <p>The comet checked everywhere - whatever was here has moved, shipped, or never existed.</p>
         <a class="btn solid" href="maxima-03-company.html">BACK TO THE SITE</a>
       </div>
     </section>
@@ -877,7 +877,7 @@ footer.site a { color: inherit; }
   function renderWiz() {
     wiz.querySelectorAll('fieldset').forEach(f => f.hidden = +f.dataset.step !== step);
     wiz.querySelectorAll('.wizdots i').forEach((d, i) => d.classList.toggle('on', i < step));
-    document.getElementById('wizlabel').textContent = 'STEP ' + step + ' OF 3 — ' + labels[step-1];
+    document.getElementById('wizlabel').textContent = 'STEP ' + step + ' OF 3 - ' + labels[step-1];
     back.disabled = step === 1;
     next.textContent = step === STEPS ? 'SUBMIT ✦' : 'NEXT →';
   }
