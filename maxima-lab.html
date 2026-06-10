@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="ink">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MAXIMA LAB — Component Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Instrument+Sans:wght@400;500;600&family=Martian+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================
+   MAXIMA LAB — the component library behind the site
+   Live demos: announcement bar · mega-menu · breadcrumbs ·
+   buttons · badges · avatars · tooltips · popover (Popover
+   API + anchor positioning) · <dialog> modal · command
+   palette (⌘K) · tabs · toasts · login + validation
+   (:user-invalid) · multi-step wizard · comparison table ·
+   progress / skeleton / spinner / empty state · pagination ·
+   share · cookie banner · gallery + lightbox · video block ·
+   controlled carousel · back-to-top · 404
+   Same tokens, scrollbar, and grain as the main site.
+   ========================================================== */
+
+:root {
+  --ink:       oklch(15% 0.05 295);
+  --ink-deep:  oklch(11% 0.04 285);
+  --sand:      oklch(96% 0.02 92);
+  --sand-dim:  oklch(76% 0.03 95);
+  --ultra:     oklch(68% 0.24 300);
+  --vermilion: oklch(67% 0.22 36);
+  --solar:     oklch(87% 0.165 95);
+  --cyan:      oklch(82% 0.14 200);
+  --ok:        oklch(75% 0.17 150);
+  --line:      oklch(96% 0.02 92 / .13);
+  --font-display: "Bricolage Grotesque", system-ui, sans-serif;
+  --font-body:    "Instrument Sans", system-ui, sans-serif;
+  --font-mono:    "Martian Mono", monospace;
+  --gutter: clamp(1.25rem, 4vw, 4.5rem);
+  --beam-gradient: linear-gradient(90deg, var(--ultra), var(--vermilion), var(--solar));
+  color-scheme: dark;
+}
+html[data-theme="solar"] {
+  --ink:      oklch(96% 0.025 95);
+  --ink-deep: oklch(91% 0.04 92);
+  --sand:     oklch(19% 0.06 300);
+  --sand-dim: oklch(40% 0.05 300);
+  --line:     oklch(19% 0.06 300 / .15);
+  color-scheme: light;
+}
+
+/* designed scrollbar */
+::-webkit-scrollbar { width: 16px; height: 12px; }
+::-webkit-scrollbar-track {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 10px, oklch(96% 0.02 92 / .07) 10px 11px),
+    var(--ink-deep);
+  border-left: 1px solid var(--line);
+}
+::-webkit-scrollbar-thumb { background: var(--beam-gradient); border-radius: 999px; border: 4px solid var(--ink-deep); min-height: 56px; }
+::-webkit-scrollbar-thumb:hover { border-width: 3px; }
+@supports not selector(::-webkit-scrollbar) { html { scrollbar-color: var(--ultra) var(--ink-deep); } }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; font-family: var(--font-body); color: var(--sand); background: var(--ink); overflow-x: clip; line-height: 1.55; }
+h1,h2,h3,h4 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+body::after { /* grain */
+  content: ""; position: fixed; inset: -50%; z-index: 80; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: .045; mix-blend-mode: overlay;
+}
+
+/* progress beam */
+.beam { position: fixed; inset: 0 0 auto 0; height: 5px; z-index: 70; background: var(--beam-gradient); transform-origin: 0 50%; transform: scaleX(0); }
+@keyframes beam-grow { to { transform: scaleX(1); } }
+@supports (animation-timeline: scroll()) { .beam { animation: beam-grow linear both; animation-timeline: scroll(root); } }
+@supports not (animation-timeline: scroll()) { .beam { display: none; } }
+
+/* ============ 01 ANNOUNCEMENT BAR ============ */
+.announce {
+  margin-top: 5px;
+  display: flex; gap: 1rem; justify-content: center; align-items: center;
+  padding: .55rem var(--gutter);
+  background: var(--beam-gradient); color: oklch(15% 0.05 295);
+  font-family: var(--font-mono); font-size: .62rem; letter-spacing: .12em;
+}
+.announce a { color: inherit; font-weight: 700; }
+.announce button { background: none; border: 0; cursor: pointer; font: inherit; color: inherit; opacity: .7; }
+.announce.is-hidden { display: none; }
+
+/* ============ HEADER + MEGA MENU ============ */
+header.site {
+  position: sticky; top: 0; z-index: 60;
+  display: flex; align-items: center; justify-content: space-between; gap: 1.2rem;
+  padding: .9rem var(--gutter);
+  backdrop-filter: blur(14px) saturate(1.3);
+  background: color-mix(in oklch, var(--ink) 65%, transparent);
+  border-bottom: 1px solid var(--line);
+}
+header.site .logo { font-family: var(--font-display); font-weight: 800; font-size: 1.1rem; text-decoration: none; color: var(--sand); }
+header.site .logo span { color: var(--vermilion); }
+header.site .right { display: flex; gap: .8rem; align-items: center; font-family: var(--font-mono); font-size: .62rem; }
+.dropdown { position: relative; }
+.dropdown > button {
+  background: none; border: 0; cursor: pointer; color: var(--sand-dim);
+  font-family: var(--font-mono); font-size: .65rem; letter-spacing: .1em; padding: .6rem .4rem;
+}
+.dropdown > button::after { content: " ▾"; font-size: .8em; }
+.dropdown .menu {
+  position: absolute; top: 100%; left: 50%; translate: -50% 0;
+  min-width: 460px; padding: 1rem; border-radius: 16px;
+  border: 1px solid var(--line);
+  background: color-mix(in oklch, var(--ink) 92%, black);
+  box-shadow: 0 30px 70px -20px oklch(0% 0 0 / .7);
+  display: none; grid-template-columns: 1fr 1fr; gap: .4rem;
+}
+.dropdown:hover .menu, .dropdown:focus-within .menu { display: grid; }
+.dropdown .menu a { display: grid; gap: .15rem; padding: .8rem .9rem; border-radius: 10px; text-decoration: none; color: var(--sand); }
+.dropdown .menu a:hover { background: color-mix(in oklch, var(--sand) 6%, transparent); }
+.dropdown .menu b { font-size: .9rem; }
+.dropdown .menu span { font-size: .78rem; color: var(--sand-dim); }
+@media (max-width: 760px) { .dropdown .menu { min-width: 300px; grid-template-columns: 1fr; left: 0; translate: 0; } }
+
+/* ============ LAYOUT: sticky TOC + content ============ */
+.lab { display: grid; grid-template-columns: 220px 1fr; gap: 3rem; padding: 3rem var(--gutter) 6rem; align-items: start; }
+@media (max-width: 880px) { .lab { grid-template-columns: 1fr; } }
+.toc { position: sticky; top: 5.2rem; display: grid; gap: .15rem; font-family: var(--font-mono); font-size: .62rem; }
+.toc a { color: var(--sand-dim); text-decoration: none; padding: .42rem .7rem; border-left: 2px solid var(--line); letter-spacing: .08em; }
+.toc a:hover { color: var(--sand); }
+.toc a.active { color: var(--solar); border-left-color: var(--solar); }
+@media (max-width: 880px) {
+  .toc { position: static; grid-auto-flow: column; overflow-x: auto; padding-bottom: .6rem; }
+  .toc a { border-left: 0; border-bottom: 2px solid var(--line); white-space: nowrap; }
+  .toc a.active { border-bottom-color: var(--solar); }
+}
+
+.lab h1 { font-size: clamp(2.4rem, 6vw, 4.6rem); font-weight: 780; letter-spacing: -.015em; line-height: .98; }
+.lab .lede { color: var(--sand-dim); max-width: 60ch; margin: 1rem 0 0; }
+.unit { padding-top: 4.2rem; }
+.unit > h2 {
+  font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 750;
+  display: flex; align-items: baseline; gap: .8rem; margin-bottom: .4rem;
+}
+.unit > h2 .no { font-family: var(--font-mono); font-size: .62rem; color: var(--solar); font-weight: 400; }
+.unit > p.note { color: var(--sand-dim); margin: 0 0 1.6rem; max-width: 62ch; font-size: .95rem; }
+.unit code, .note code { font-family: var(--font-mono); font-size: .72em; background: color-mix(in oklch, var(--sand) 8%, transparent); padding: .12rem .4rem; border-radius: 6px; }
+.demo {
+  border: 1px dashed color-mix(in oklch, var(--sand) 28%, transparent);
+  border-radius: 18px; padding: 1.6rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;
+}
+.demo.stack { display: grid; align-items: stretch; }
+
+/* ============ BUTTONS ============ */
+.btn {
+  font-family: var(--font-mono); font-size: .66rem; letter-spacing: .12em;
+  padding: .85rem 1.7rem; border-radius: 999px; cursor: pointer; text-decoration: none;
+  display: inline-flex; gap: .6rem; align-items: center; justify-content: center;
+  transition: scale .15s ease, box-shadow .2s, opacity .2s; border: 1px solid transparent; color: var(--sand);
+}
+.btn:hover:not(:disabled) { scale: 1.04; }
+.btn.solid  { color: var(--ink); background: var(--sand); border-color: var(--sand); }
+.btn.solid:hover:not(:disabled) { box-shadow: 0 0 36px oklch(68% 0.24 300 / .5); }
+.btn.accent { color: oklch(99% 0 0); background: var(--ultra); border-color: var(--ultra); }
+.btn.ghost  { background: transparent; border-color: var(--line); }
+.btn.ghost:hover:not(:disabled) { border-color: var(--sand-dim); }
+.btn.danger { color: oklch(99% 0 0); background: var(--vermilion); border-color: var(--vermilion); }
+.btn.sm { padding: .55rem 1.1rem; font-size: .58rem; }
+.btn.lg { padding: 1.1rem 2.4rem; font-size: .74rem; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn .spin { width: 12px; height: 12px; border-radius: 50%; border: 2px solid currentColor; border-top-color: transparent; animation: rot 1s linear infinite; }
+@keyframes rot { to { rotate: 360deg; } }
+
+/* ============ BADGES / CHIPS / AVATARS ============ */
+.badge {
+  font-family: var(--font-mono); font-size: .55rem; letter-spacing: .12em;
+  padding: .35rem .75rem; border-radius: 999px; border: 1px solid var(--line); color: var(--sand-dim);
+}
+.badge.ultra { color: var(--ultra); border-color: color-mix(in oklch, var(--ultra) 50%, transparent); background: color-mix(in oklch, var(--ultra) 12%, transparent); }
+.badge.solar { color: var(--solar); border-color: color-mix(in oklch, var(--solar) 50%, transparent); background: color-mix(in oklch, var(--solar) 12%, transparent); }
+.badge.ok    { color: var(--ok); border-color: color-mix(in oklch, var(--ok) 50%, transparent); background: color-mix(in oklch, var(--ok) 12%, transparent); }
+.badge.hot   { color: var(--vermilion); border-color: color-mix(in oklch, var(--vermilion) 50%, transparent); background: color-mix(in oklch, var(--vermilion) 12%, transparent); }
+.badge .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: .4rem; animation: blink 1.6s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: .3; } }
+.chip { composes: badge; }
+.chip button { background: none; border: 0; color: inherit; cursor: pointer; font-size: .8rem; padding: 0 0 0 .4rem; }
+.avatars { display: flex; }
+.avatars i {
+  width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--ink);
+  display: grid; place-items: center; font-family: var(--font-mono); font-size: .55rem; color: oklch(99% 0 0);
+  margin-left: -10px;
+}
+.avatars i:first-child { margin-left: 0; }
+.avatars i:nth-child(1) { background: conic-gradient(from 200deg, var(--ultra), var(--cyan)); }
+.avatars i:nth-child(2) { background: conic-gradient(from 90deg, var(--vermilion), var(--solar)); }
+.avatars i:nth-child(3) { background: conic-gradient(from 320deg, var(--solar), var(--ultra)); }
+.avatars i:nth-child(4) { background: conic-gradient(from 10deg, var(--cyan), var(--vermilion)); }
+.avatars i.more { background: color-mix(in oklch, var(--sand) 12%, var(--ink)); color: var(--sand); }
+
+/* ============ TOOLTIP (CSS) + POPOVER (Popover API) ============ */
+[data-tip] { position: relative; }
+[data-tip]::after {
+  content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); left: 50%; translate: -50% 4px;
+  background: var(--ink-deep); color: var(--sand); border: 1px solid var(--line);
+  font-family: var(--font-mono); font-size: .55rem; letter-spacing: .08em; white-space: nowrap;
+  padding: .45rem .7rem; border-radius: 8px; pointer-events: none;
+  opacity: 0; transition: opacity .18s, translate .18s; z-index: 20;
+}
+[data-tip]:hover::after, [data-tip]:focus-visible::after { opacity: 1; translate: -50% 0; }
+[popover] {
+  border: 1px solid var(--line); border-radius: 16px; padding: 1.2rem 1.3rem;
+  background: color-mix(in oklch, var(--ink) 94%, black); color: var(--sand);
+  box-shadow: 0 30px 70px -20px oklch(0% 0 0 / .8); max-width: 300px;
+}
+[popover]::backdrop { background: transparent; }
+[popover] h4 { font-size: 1rem; margin-bottom: .3rem; }
+[popover] p { margin: 0; font-size: .85rem; color: var(--sand-dim); }
+@supports (anchor-name: --a) {
+  #pop-anchor-btn { anchor-name: --pop-a; }
+  #pop-demo { position-anchor: --pop-a; position-area: block-end; margin-top: 10px; }
+}
+
+/* ============ DIALOG / MODAL / COMMAND PALETTE ============ */
+dialog {
+  border: 1px solid var(--line); border-radius: 20px; padding: 0;
+  background: color-mix(in oklch, var(--ink) 96%, black); color: var(--sand);
+  width: min(92vw, 460px); box-shadow: 0 50px 120px -30px oklch(0% 0 0 / .9);
+}
+dialog::backdrop { background: oklch(8% 0.03 290 / .6); backdrop-filter: blur(6px); }
+dialog .dlg-head { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--line); }
+dialog .dlg-head h3 { font-size: 1.2rem; }
+dialog .dlg-body { padding: 1.4rem; color: var(--sand-dim); font-size: .95rem; }
+dialog .dlg-foot { display: flex; gap: .8rem; justify-content: flex-end; padding: 0 1.4rem 1.4rem; }
+dialog .x { background: none; border: 0; color: var(--sand-dim); font-size: 1.1rem; cursor: pointer; }
+@keyframes dlg-in { from { opacity: 0; translate: 0 18px; scale: .97; } }
+dialog[open] { animation: dlg-in .25s ease; }
+/* command palette */
+#palette { width: min(92vw, 560px); }
+#palette input {
+  width: 100%; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--sand);
+  font-family: var(--font-body); font-size: 1.05rem; padding: 1.1rem 1.4rem; outline: none;
+}
+#palette ul { list-style: none; margin: 0; padding: .6rem; max-height: 300px; overflow: auto; }
+#palette li { padding: .75rem .9rem; border-radius: 10px; display: flex; justify-content: space-between; gap: 1rem; cursor: pointer; font-size: .92rem; }
+#palette li:hover, #palette li.sel { background: color-mix(in oklch, var(--sand) 7%, transparent); }
+#palette li kbd { font-family: var(--font-mono); font-size: .55rem; color: var(--sand-dim); border: 1px solid var(--line); border-radius: 6px; padding: .15rem .45rem; }
+#palette li[hidden] { display: none; }
+kbd.hint { font-family: var(--font-mono); font-size: .55rem; border: 1px solid var(--line); border-radius: 6px; padding: .25rem .5rem; color: var(--sand-dim); }
+
+/* ============ TABS ============ */
+.tabs { display: grid; gap: 0; width: 100%; }
+.tablist { display: flex; gap: .2rem; border-bottom: 1px solid var(--line); }
+.tablist button {
+  background: none; border: 0; border-bottom: 2px solid transparent; cursor: pointer;
+  color: var(--sand-dim); font-family: var(--font-mono); font-size: .62rem; letter-spacing: .12em;
+  padding: .8rem 1.1rem; margin-bottom: -1px;
+}
+.tablist button[aria-selected="true"] { color: var(--sand); border-bottom-color: var(--vermilion); }
+.tabpanel { padding: 1.3rem .2rem 0; color: var(--sand-dim); font-size: .95rem; }
+.tabpanel[hidden] { display: none; }
+
+/* ============ TOASTS ============ */
+.toasts { position: fixed; bottom: 1.2rem; right: 1.6rem; display: grid; gap: .6rem; z-index: 75; }
+.toast {
+  display: flex; gap: .8rem; align-items: center;
+  background: color-mix(in oklch, var(--ink) 94%, black); border: 1px solid var(--line);
+  border-left: 4px solid var(--accent, var(--ultra)); border-radius: 12px;
+  padding: .85rem 1.1rem; font-size: .88rem; min-width: 260px;
+  box-shadow: 0 20px 50px -15px oklch(0% 0 0 / .8);
+  animation: toast-in .3s cubic-bezier(.2,.9,.3,1.2);
+}
+.toast.bye { animation: toast-out .3s ease forwards; }
+@keyframes toast-in { from { opacity: 0; translate: 30px 0; } }
+@keyframes toast-out { to { opacity: 0; translate: 30px 0; } }
+.toast b { font-size: .82rem; display: block; }
+.toast span { color: var(--sand-dim); font-size: .8rem; }
+
+/* ============ FORMS ============ */
+.formgrid { display: grid; gap: 1.4rem; grid-template-columns: 1fr 1fr; width: 100%; }
+@media (max-width: 760px) { .formgrid { grid-template-columns: 1fr; } }
+.panelbox { border: 1px solid var(--line); border-radius: 18px; padding: 1.7rem; background: color-mix(in oklch, var(--sand) 3%, transparent); display: grid; gap: 1rem; align-content: start; }
+.panelbox h3 { font-size: 1.25rem; }
+.field { display: grid; gap: .4rem; font-family: var(--font-mono); font-size: .56rem; letter-spacing: .12em; color: var(--sand-dim); text-transform: uppercase; }
+.field input, .field select, .field textarea {
+  font-family: var(--font-body); font-size: .95rem; color: var(--sand);
+  background: color-mix(in oklch, var(--sand) 5%, transparent);
+  border: 1px solid var(--line); border-radius: 12px; padding: .8rem 1rem; transition: border-color .2s;
+}
+.field :is(input,select,textarea):focus { outline: none; border-color: var(--ultra); }
+.field input:user-invalid { border-color: var(--vermilion); }
+.field input:user-valid { border-color: color-mix(in oklch, var(--ok) 60%, transparent); }
+.field .err { display: none; color: var(--vermilion); font-size: .56rem; letter-spacing: .08em; }
+.field:has(input:user-invalid) .err { display: block; }
+.muted-link { font-size: .8rem; color: var(--sand-dim); }
+.muted-link a { color: var(--solar); }
+/* wizard */
+.wizdots { display: flex; gap: .5rem; align-items: center; font-family: var(--font-mono); font-size: .55rem; color: var(--sand-dim); }
+.wizdots i { width: 26px; height: 4px; border-radius: 99px; background: var(--line); }
+.wizdots i.on { background: var(--beam-gradient); }
+.wizard fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 1rem; }
+.wizard fieldset[hidden] { display: none; }
+.wizard .wiznav { display: flex; justify-content: space-between; margin-top: .4rem; }
+.wizard .done { text-align: center; padding: 1.4rem 0; display: grid; gap: .5rem; justify-items: center; }
+.wizard .done .big { font-size: 2.2rem; }
+
+/* ============ TABLE ============ */
+.tablewrap { width: 100%; overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; }
+table.compare { border-collapse: collapse; width: 100%; min-width: 560px; font-size: .9rem; }
+table.compare th, table.compare td { padding: .9rem 1.1rem; text-align: left; border-bottom: 1px solid var(--line); }
+table.compare thead th { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .12em; color: var(--solar); text-transform: uppercase; background: color-mix(in oklch, var(--sand) 4%, transparent); }
+table.compare tbody tr:hover { background: color-mix(in oklch, var(--sand) 3%, transparent); }
+table.compare tbody tr:last-child td { border-bottom: 0; }
+table.compare td.y { color: var(--ok); }
+table.compare td.n { color: var(--sand-dim); opacity: .5; }
+table.compare .feat { color: var(--sand); }
+table.compare .col-hot { background: color-mix(in oklch, var(--ultra) 7%, transparent); }
+
+/* ============ FEEDBACK: progress / skeleton / spinner / empty ============ */
+.bar { width: 100%; height: 8px; border-radius: 99px; background: color-mix(in oklch, var(--sand) 8%, transparent); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 99px; background: var(--beam-gradient); width: var(--v, 50%); transition: width .4s ease; }
+.skel { display: grid; gap: .7rem; width: 100%; max-width: 420px; }
+.skel i {
+  height: 14px; border-radius: 8px;
+  background: linear-gradient(90deg, color-mix(in oklch, var(--sand) 7%, transparent) 25%, color-mix(in oklch, var(--sand) 14%, transparent) 50%, color-mix(in oklch, var(--sand) 7%, transparent) 75%);
+  background-size: 200% 100%; animation: shimmer 1.4s linear infinite;
+}
+.skel i:nth-child(1) { width: 40%; height: 20px; }
+.skel i:nth-child(3) { width: 85%; }
+.skel i:nth-child(4) { width: 60%; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+.spinner { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--vermilion); animation: rot 1s linear infinite; }
+.empty { text-align: center; display: grid; gap: .6rem; justify-items: center; padding: 1.4rem; width: 100%; }
+.empty .glyph { font-size: 2.4rem; filter: grayscale(.3); }
+.empty h3 { font-size: 1.15rem; }
+.empty p { margin: 0; color: var(--sand-dim); font-size: .9rem; max-width: 34ch; }
+
+/* ============ NAV BITS: breadcrumbs / pagination / share ============ */
+.crumbs { display: flex; gap: .6rem; align-items: center; font-family: var(--font-mono); font-size: .6rem; letter-spacing: .1em; flex-wrap: wrap; }
+.crumbs a { color: var(--sand-dim); text-decoration: none; }
+.crumbs a:hover { color: var(--sand); }
+.crumbs i { color: var(--vermilion); font-style: normal; }
+.crumbs b { color: var(--sand); font-weight: 400; }
+.pager { display: flex; gap: .4rem; align-items: center; font-family: var(--font-mono); font-size: .62rem; }
+.pager button {
+  min-width: 38px; height: 38px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--line); background: transparent; color: var(--sand-dim); font: inherit;
+}
+.pager button:hover:not(:disabled) { color: var(--sand); border-color: var(--sand-dim); }
+.pager button[aria-current="page"] { background: var(--sand); color: var(--ink); border-color: var(--sand); }
+.pager button:disabled { opacity: .35; cursor: not-allowed; }
+.share { display: flex; gap: .6rem; }
+.share button {
+  width: 42px; height: 42px; border-radius: 50%; cursor: pointer; display: grid; place-items: center;
+  border: 1px solid var(--line); background: transparent; color: var(--sand-dim);
+  font-family: var(--font-mono); font-size: .6rem; transition: color .2s, border-color .2s, scale .15s;
+}
+.share button:hover { color: var(--sand); border-color: var(--sand-dim); scale: 1.08; }
+
+/* ============ MEDIA: gallery / video / carousel ============ */
+.gallery { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); width: 100%; }
+.gallery button { border: 1px solid var(--line); border-radius: 14px; aspect-ratio: 4/3; cursor: zoom-in; overflow: clip; padding: 0; transition: scale .2s; }
+.gallery button:hover { scale: 1.03; }
+.gallery .g1 { background: radial-gradient(circle at 30% 30%, var(--ultra), var(--ink-deep)); }
+.gallery .g2 { background: radial-gradient(circle at 70% 40%, var(--vermilion), var(--ink-deep)); }
+.gallery .g3 { background: radial-gradient(circle at 40% 70%, var(--solar), var(--ink-deep)); }
+.gallery .g4 { background: radial-gradient(circle at 60% 60%, var(--cyan), var(--ink-deep)); }
+#lightbox { width: min(92vw, 720px); }
+#lightbox .art { aspect-ratio: 16/10; border-radius: 20px 20px 0 0; }
+#lightbox figcaption { padding: 1rem 1.4rem 1.3rem; display: flex; justify-content: space-between; align-items: center; color: var(--sand-dim); font-size: .85rem; }
+.video {
+  width: 100%; aspect-ratio: 16/9; border-radius: 18px; border: 1px solid var(--line);
+  background:
+    radial-gradient(circle at 25% 30%, oklch(68% 0.24 300 / .5), transparent 55%),
+    radial-gradient(circle at 80% 75%, oklch(67% 0.22 36 / .45), transparent 55%),
+    var(--ink-deep);
+  display: grid; place-items: center; position: relative; overflow: clip;
+}
+.video .play {
+  width: 76px; height: 76px; border-radius: 50%; border: 0; cursor: pointer;
+  background: var(--sand); color: var(--ink); font-size: 1.3rem; display: grid; place-items: center;
+  transition: scale .2s; box-shadow: 0 0 60px oklch(68% 0.24 300 / .6);
+}
+.video .play:hover { scale: 1.1; }
+.video .dur { position: absolute; bottom: 1rem; right: 1.2rem; font-family: var(--font-mono); font-size: .58rem; color: var(--sand-dim); letter-spacing: .1em; }
+/* controlled carousel */
+.carousel { width: 100%; display: grid; gap: .9rem; }
+.slider {
+  display: grid; grid-auto-flow: column; grid-auto-columns: 100%;
+  overflow-x: auto; scroll-snap-type: x mandatory; border-radius: 18px;
+  scrollbar-width: none;
+}
+.slider::-webkit-scrollbar { display: none; }
+.slide {
+  scroll-snap-align: start; aspect-ratio: 21/9; display: grid; place-content: center; gap: .4rem; text-align: center;
+  border: 1px solid var(--line);
+}
+.slide h3 { font-size: clamp(1.4rem, 3vw, 2.2rem); }
+.slide span { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .14em; color: var(--sand-dim); }
+.slide.s1 { background: linear-gradient(140deg, color-mix(in oklch, var(--ultra) 30%, var(--ink-deep)), var(--ink-deep)); }
+.slide.s2 { background: linear-gradient(140deg, color-mix(in oklch, var(--vermilion) 30%, var(--ink-deep)), var(--ink-deep)); }
+.slide.s3 { background: linear-gradient(140deg, color-mix(in oklch, var(--cyan) 30%, var(--ink-deep)), var(--ink-deep)); }
+.car-nav { display: flex; justify-content: space-between; align-items: center; }
+.car-nav .arrows { display: flex; gap: .5rem; }
+.car-nav .arrows button { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--sand); cursor: pointer; }
+.car-nav .arrows button:hover { border-color: var(--sand-dim); }
+.dots { display: flex; gap: .5rem; }
+.dots button { width: 10px; height: 10px; border-radius: 50%; border: 0; padding: 0; cursor: pointer; background: var(--line); }
+.dots button.on { background: var(--vermilion); }
+
+/* ============ 404 ============ */
+.notfound {
+  width: 100%; border: 1px solid var(--line); border-radius: 20px; overflow: clip;
+  text-align: center; padding: 3.5rem 1.5rem; position: relative; isolation: isolate;
+}
+.notfound::before {
+  content: ""; position: absolute; inset: -40%; z-index: -1; filter: blur(60px); opacity: .35;
+  background: radial-gradient(circle at 30% 30%, var(--ultra), transparent 45%), radial-gradient(circle at 70% 70%, var(--vermilion), transparent 45%);
+}
+.notfound .code {
+  font-family: var(--font-display); font-weight: 800; font-size: clamp(4rem, 14vw, 9rem); line-height: 1;
+  background: var(--beam-gradient); background-clip: text; -webkit-background-clip: text; color: transparent;
+}
+.notfound p { color: var(--sand-dim); margin: .6rem auto 1.4rem; max-width: 40ch; }
+
+/* ============ COOKIE BANNER + BACK TO TOP ============ */
+.cookies {
+  position: fixed; bottom: 1.2rem; left: 1.6rem; z-index: 75;
+  max-width: 360px; border: 1px solid var(--line); border-radius: 16px;
+  background: color-mix(in oklch, var(--ink) 94%, black); padding: 1.2rem 1.3rem;
+  box-shadow: 0 30px 70px -20px oklch(0% 0 0 / .8); display: grid; gap: .8rem; font-size: .85rem;
+}
+.cookies p { margin: 0; color: var(--sand-dim); }
+.cookies .row { display: flex; gap: .6rem; }
+.cookies.is-hidden { display: none; }
+.totop {
+  position: fixed; bottom: 1.4rem; right: 1.6rem; z-index: 74;
+  width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line); cursor: pointer;
+  background: color-mix(in oklch, var(--ink) 90%, black); color: var(--sand); font-size: 1rem;
+  opacity: 0; pointer-events: none; transition: opacity .3s, scale .15s;
+}
+.totop:hover { scale: 1.08; }
+@keyframes totop-in { 0%, 8% { opacity: 0; pointer-events: none; } 12%, 100% { opacity: 1; pointer-events: auto; } }
+@supports (animation-timeline: scroll()) {
+  .totop { animation: totop-in linear both; animation-timeline: scroll(root); }
+}
+@supports not (animation-timeline: scroll()) { .totop { opacity: 1; pointer-events: auto; } }
+
+/* ============ FOOTER ============ */
+footer.site { border-top: 1px solid var(--line); padding: 2.4rem var(--gutter); display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; font-family: var(--font-mono); font-size: .58rem; color: var(--sand-dim); letter-spacing: .1em; }
+footer.site a { color: inherit; }
+
+:focus-visible { outline: 2px solid var(--solar); outline-offset: 3px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  html { scroll-behavior: auto; }
+  .totop { opacity: 1; pointer-events: auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="beam" aria-hidden="true"></div>
+
+<!-- 01 · ANNOUNCEMENT BAR -->
+<div class="announce" id="announce">
+  <span>LAB v1.0 SHIPPED — EVERY COMPONENT BELOW IS LIVE.</span>
+  <a href="#dialogs">JUMP TO DIALOGS →</a>
+  <button aria-label="Dismiss announcement" onclick="document.getElementById('announce').classList.add('is-hidden')">✕</button>
+</div>
+
+<!-- 02 · HEADER w/ MEGA MENU -->
+<header class="site">
+  <a class="logo" href="maxima-03-company.html">MAXIMA<span>·LAB</span></a>
+  <div class="dropdown">
+    <button aria-haspopup="true">COMPONENTS</button>
+    <div class="menu">
+      <a href="#buttons"><b>Primitives</b><span>Buttons, badges, avatars, tooltips</span></a>
+      <a href="#dialogs"><b>Overlays</b><span>Modal, popover, command palette, toasts</span></a>
+      <a href="#forms"><b>Forms</b><span>Login, validation states, wizard</span></a>
+      <a href="#media"><b>Media</b><span>Gallery, lightbox, video, carousel</span></a>
+    </div>
+  </div>
+  <div class="right">
+    <button class="btn ghost sm" id="open-palette">SEARCH <kbd class="hint">⌘K</kbd></button>
+    <button class="btn ghost sm" id="flip">THEME</button>
+  </div>
+</header>
+
+<div class="lab">
+  <!-- sticky TOC w/ scrollspy -->
+  <nav class="toc" aria-label="Components">
+    <a href="#buttons">BUTTONS</a>
+    <a href="#badges">BADGES + AVATARS</a>
+    <a href="#tips">TOOLTIP + POPOVER</a>
+    <a href="#dialogs">DIALOG + ⌘K</a>
+    <a href="#tabs">TABS</a>
+    <a href="#toasts">TOASTS</a>
+    <a href="#forms">FORMS + WIZARD</a>
+    <a href="#table">TABLE</a>
+    <a href="#feedback">FEEDBACK STATES</a>
+    <a href="#navbits">NAV BITS</a>
+    <a href="#media">MEDIA</a>
+    <a href="#fourohfour">404</a>
+  </nav>
+
+  <div class="content">
+    <h1>The Component Lab</h1>
+    <p class="lede">Every primitive the main site doesn't show — live, themed, and built on the newest platform APIs: native <code>&lt;dialog&gt;</code>, the Popover API, CSS anchor positioning, <code>:user-invalid</code>, and scroll-driven reveals. Copy any block into a client build.</p>
+    <div style="margin-top:1rem;" class="crumbs" aria-label="Breadcrumb">
+      <a href="maxima-03-company.html">MAXIMA</a><i>/</i><a href="#">RESOURCES</a><i>/</i><b>COMPONENT LAB</b>
+    </div>
+
+    <!-- BUTTONS -->
+    <section class="unit" id="buttons">
+      <h2><span class="no">01</span>Buttons</h2>
+      <p class="note">Four intents, three sizes, plus disabled and loading states. Loading uses a CSS-only spinner.</p>
+      <div class="demo">
+        <button class="btn solid">SOLID</button>
+        <button class="btn accent">ACCENT</button>
+        <button class="btn ghost">GHOST</button>
+        <button class="btn danger">DANGER</button>
+        <button class="btn solid sm">SMALL</button>
+        <button class="btn solid lg">LARGE</button>
+        <button class="btn solid" disabled>DISABLED</button>
+        <button class="btn ghost"><span class="spin" aria-hidden="true"></span>LOADING</button>
+      </div>
+    </section>
+
+    <!-- BADGES -->
+    <section class="unit" id="badges">
+      <h2><span class="no">02</span>Badges, chips &amp; avatars</h2>
+      <p class="note">Status badges with a live pulse dot, dismissible chips, and an overlapping avatar stack.</p>
+      <div class="demo">
+        <span class="badge ok"><span class="dot"></span>OPERATIONAL</span>
+        <span class="badge ultra">BETA</span>
+        <span class="badge solar">PRO</span>
+        <span class="badge hot">DEPRECATED</span>
+        <span class="badge">NEUTRAL</span>
+        <span class="badge ultra">REACT <button aria-label="Remove" onclick="this.parentElement.remove()" style="background:none;border:0;color:inherit;cursor:pointer;padding:0 0 0 .4rem;">✕</button></span>
+        <span class="badge solar">MOTION <button aria-label="Remove" onclick="this.parentElement.remove()" style="background:none;border:0;color:inherit;cursor:pointer;padding:0 0 0 .4rem;">✕</button></span>
+        <div class="avatars" data-tip="June, Kofi, Lena, Rio + 34 more">
+          <i>JM</i><i>KT</i><i>LS</i><i>RD</i><i class="more">+34</i>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOOLTIP + POPOVER -->
+    <section class="unit" id="tips">
+      <h2><span class="no">03</span>Tooltip &amp; popover</h2>
+      <p class="note">Tooltips are pure CSS via a <code>data-tip</code> attribute. The popover uses the native Popover API — light-dismiss for free — anchored to its trigger with CSS anchor positioning where supported.</p>
+      <div class="demo">
+        <button class="btn ghost" data-tip="Pure CSS — hover or focus me">HOVER FOR TOOLTIP</button>
+        <button class="btn accent" id="pop-anchor-btn" popovertarget="pop-demo">OPEN POPOVER</button>
+        <div id="pop-demo" popover>
+          <h4>Native popover</h4>
+          <p>No JavaScript: <code>popovertarget</code> wires the button, the browser handles focus, stacking, and click-outside dismissal.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIALOG + PALETTE -->
+    <section class="unit" id="dialogs">
+      <h2><span class="no">04</span>Dialog &amp; command palette</h2>
+      <p class="note">Native <code>&lt;dialog&gt;</code> with a blurred <code>::backdrop</code> — focus trapping and Esc-to-close come from the browser. The palette is the same element dressed as a ⌘K launcher with live filtering.</p>
+      <div class="demo">
+        <button class="btn solid" id="open-modal">OPEN MODAL</button>
+        <button class="btn ghost" onclick="document.getElementById('open-palette').click()">OPEN ⌘K PALETTE</button>
+      </div>
+    </section>
+
+    <!-- TABS -->
+    <section class="unit" id="tabs">
+      <h2><span class="no">05</span>Tabs</h2>
+      <p class="note">ARIA-wired tablist with arrow-key navigation.</p>
+      <div class="demo stack">
+        <div class="tabs">
+          <div class="tablist" role="tablist" aria-label="Project phases">
+            <button role="tab" aria-selected="true" aria-controls="tp1" id="tab1">SIGNAL</button>
+            <button role="tab" aria-selected="false" aria-controls="tp2" id="tab2" tabindex="-1">SHAPE</button>
+            <button role="tab" aria-selected="false" aria-controls="tp3" id="tab3" tabindex="-1">SHIP</button>
+          </div>
+          <div class="tabpanel" id="tp1" role="tabpanel" aria-labelledby="tab1">Two weeks of interviews and audits. We find the one move that changes your trajectory before anyone opens a design tool.</div>
+          <div class="tabpanel" id="tp2" role="tabpanel" aria-labelledby="tab2" hidden>Brand direction, architecture, and a clickable prototype tested with real users — approve a thing you can touch.</div>
+          <div class="tabpanel" id="tp3" role="tabpanel" aria-labelledby="tab3" hidden>Weekly releases to production from day one, with design and engineering in the same standup.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOASTS -->
+    <section class="unit" id="toasts">
+      <h2><span class="no">06</span>Toasts</h2>
+      <p class="note">Stacked bottom-right, auto-dismiss after four seconds, spring-in animation.</p>
+      <div class="demo">
+        <button class="btn ghost" onclick="toast('Saved', 'Your changes are live.', 'var(--ok)')">SUCCESS TOAST</button>
+        <button class="btn ghost" onclick="toast('Heads up', 'Your trial ends in 3 days.', 'var(--solar)')">WARNING TOAST</button>
+        <button class="btn ghost" onclick="toast('Deploy failed', 'Build #214 — rollback started.', 'var(--vermilion)')">ERROR TOAST</button>
+      </div>
+    </section>
+
+    <!-- FORMS -->
+    <section class="unit" id="forms">
+      <h2><span class="no">07</span>Forms, validation &amp; wizard</h2>
+      <p class="note">Validation styling uses <code>:user-invalid</code> — errors appear only after you've actually touched a field, no JavaScript. The wizard is a three-step flow with progress.</p>
+      <div class="formgrid">
+        <form class="panelbox" onsubmit="event.preventDefault(); toast('Welcome back', 'Signed in as demo@maxima.studio', 'var(--ok)')">
+          <h3>Sign in</h3>
+          <label class="field">Email
+            <input type="email" required placeholder="you@company.com">
+            <span class="err">ENTER A VALID EMAIL</span>
+          </label>
+          <label class="field">Password
+            <input type="password" required minlength="8" placeholder="••••••••">
+            <span class="err">MINIMUM 8 CHARACTERS</span>
+          </label>
+          <button class="btn solid" type="submit">SIGN IN</button>
+          <span class="muted-link">No account? <a href="#forms">Start a trial</a> · <a href="#forms">Forgot password</a></span>
+        </form>
+
+        <form class="panelbox wizard" id="wizard" onsubmit="event.preventDefault();">
+          <h3>Project wizard</h3>
+          <div class="wizdots"><i class="on"></i><i></i><i></i><span id="wizlabel">STEP 1 OF 3 — BASICS</span></div>
+          <fieldset data-step="1">
+            <label class="field">Project name<input type="text" placeholder="Apollo redesign"></label>
+            <label class="field">Company<input type="text" placeholder="Acme Inc."></label>
+          </fieldset>
+          <fieldset data-step="2" hidden>
+            <label class="field">Budget
+              <select><option>$14k sprint</option><option>$25–50k</option><option>$50k+</option></select>
+            </label>
+            <label class="field">Timeline
+              <select><option>ASAP</option><option>This quarter</option><option>Exploring</option></select>
+            </label>
+          </fieldset>
+          <fieldset data-step="3" hidden>
+            <label class="field">Anything else?<textarea rows="3" placeholder="Context, links, constraints…"></textarea></label>
+          </fieldset>
+          <div class="done" hidden><span class="big">✦</span><h3>Submitted</h3><p class="muted-link">A principal replies within one business day.</p></div>
+          <div class="wiznav">
+            <button class="btn ghost sm" type="button" id="wiz-back" disabled>← BACK</button>
+            <button class="btn solid sm" type="button" id="wiz-next">NEXT →</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- TABLE -->
+    <section class="unit" id="table">
+      <h2><span class="no">08</span>Comparison table</h2>
+      <p class="note">A real <code>&lt;table&gt;</code>, horizontally scrollable on mobile, with the featured column tinted.</p>
+      <div class="tablewrap">
+        <table class="compare">
+          <thead>
+            <tr><th>Feature</th><th>Sprint</th><th class="col-hot">Studio Retainer</th><th>Embedded</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="feat">Live client dashboard</td><td class="y">✓</td><td class="y col-hot">✓</td><td class="y">✓</td></tr>
+            <tr><td class="feat">Dedicated pod</td><td class="n">—</td><td class="y col-hot">✓</td><td class="y">✓</td></tr>
+            <tr><td class="feat">Weekly production releases</td><td class="n">—</td><td class="y col-hot">✓</td><td class="y">✓</td></tr>
+            <tr><td class="feat">48-hour hotfix SLA</td><td class="n">—</td><td class="y col-hot">✓</td><td class="y">✓</td></tr>
+            <tr><td class="feat">Fractional leadership</td><td class="n">—</td><td class="n col-hot">—</td><td class="y">✓</td></tr>
+            <tr><td class="feat">Hiring &amp; team build-out</td><td class="n">—</td><td class="n col-hot">—</td><td class="y">✓</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- FEEDBACK -->
+    <section class="unit" id="feedback">
+      <h2><span class="no">09</span>Feedback states</h2>
+      <p class="note">Progress, shimmering skeleton, spinner, and an empty state — the unglamorous 80% of real product UI.</p>
+      <div class="demo stack" style="gap:1.6rem;">
+        <div style="display:grid; gap:.5rem;">
+          <div class="bar"><i style="--v:72%"></i></div>
+          <div class="bar"><i style="--v:38%"></i></div>
+        </div>
+        <div style="display:flex; gap:2rem; flex-wrap:wrap; align-items:center;">
+          <div class="skel" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          <div class="spinner" role="status" aria-label="Loading"></div>
+        </div>
+        <div class="empty">
+          <span class="glyph">🗂️</span>
+          <h3>No projects yet</h3>
+          <p>When you start your first engagement, it'll show up here with its live dashboard.</p>
+          <button class="btn solid sm">START A PROJECT</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- NAV BITS -->
+    <section class="unit" id="navbits">
+      <h2><span class="no">10</span>Breadcrumbs, pagination &amp; share</h2>
+      <p class="note">The small furniture every multi-page site needs.</p>
+      <div class="demo stack" style="gap:1.6rem;">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="#">HOME</a><i>/</i><a href="#">JOURNAL</a><i>/</i><a href="#">2026</a><i>/</i><b>SCROLL IS THE NEW TIMELINE</b></nav>
+        <nav class="pager" aria-label="Pagination">
+          <button disabled>←</button>
+          <button aria-current="page">1</button><button>2</button><button>3</button>
+          <span style="color:var(--sand-dim); padding-inline:.3rem;">…</span>
+          <button>12</button>
+          <button>→</button>
+        </nav>
+        <div class="share" aria-label="Share">
+          <button data-tip="Copy link" onclick="toast('Link copied', 'URL is on your clipboard.', 'var(--ok)')">⧉</button>
+          <button data-tip="Share on X">𝕏</button>
+          <button data-tip="Share on LinkedIn">in</button>
+          <button data-tip="Email it">@</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MEDIA -->
+    <section class="unit" id="media">
+      <h2><span class="no">11</span>Gallery, video &amp; carousel</h2>
+      <p class="note">The gallery opens a <code>&lt;dialog&gt;</code> lightbox. The carousel is scroll-snap underneath with arrows and dots layered on — swipe still works on touch.</p>
+      <div class="demo stack" style="gap:1.6rem;">
+        <div class="gallery">
+          <button class="g1" data-cap="Ultraviolet study · 01" aria-label="Open image 1"></button>
+          <button class="g2" data-cap="Vermilion study · 02" aria-label="Open image 2"></button>
+          <button class="g3" data-cap="Solar study · 03" aria-label="Open image 3"></button>
+          <button class="g4" data-cap="Cyan study · 04" aria-label="Open image 4"></button>
+        </div>
+        <div class="video">
+          <button class="play" aria-label="Play showreel" onclick="toast('Showreel', 'Wire this to your player of choice.', 'var(--ultra)')">▶</button>
+          <span class="dur">SHOWREEL · 1:42</span>
+        </div>
+        <div class="carousel">
+          <div class="slider" id="slider">
+            <div class="slide s1"><h3>Slide one</h3><span>SCROLL-SNAP UNDERNEATH</span></div>
+            <div class="slide s2"><h3>Slide two</h3><span>ARROWS + DOTS LAYERED ON</span></div>
+            <div class="slide s3"><h3>Slide three</h3><span>SWIPE STILL WORKS ON TOUCH</span></div>
+          </div>
+          <div class="car-nav">
+            <div class="dots" id="dots" role="tablist" aria-label="Slides"></div>
+            <div class="arrows">
+              <button id="car-prev" aria-label="Previous slide">←</button>
+              <button id="car-next" aria-label="Next slide">→</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 404 -->
+    <section class="unit" id="fourohfour">
+      <h2><span class="no">12</span>404 page</h2>
+      <p class="note">Drop this block into a <code>404.html</code> with the shared header and footer.</p>
+      <div class="notfound">
+        <div class="code">404</div>
+        <h3>This page ricocheted away</h3>
+        <p>The comet checked everywhere — whatever was here has moved, shipped, or never existed.</p>
+        <a class="btn solid" href="maxima-03-company.html">BACK TO THE SITE</a>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- MODAL -->
+<dialog id="modal">
+  <div class="dlg-head"><h3>Delete project?</h3><button class="x" aria-label="Close" onclick="this.closest('dialog').close()">✕</button></div>
+  <div class="dlg-body">This removes <b style="color:var(--sand)">Apollo redesign</b> and its dashboard for everyone on the team. This can't be undone.</div>
+  <div class="dlg-foot">
+    <button class="btn ghost sm" onclick="this.closest('dialog').close()">CANCEL</button>
+    <button class="btn danger sm" onclick="this.closest('dialog').close(); toast('Deleted', 'Apollo redesign was removed.', 'var(--vermilion)')">DELETE</button>
+  </div>
+</dialog>
+
+<!-- COMMAND PALETTE -->
+<dialog id="palette">
+  <input type="text" id="palette-q" placeholder="Search components… (Esc to close)" autocomplete="off">
+  <ul id="palette-list">
+    <li data-href="#buttons">Buttons <kbd>01</kbd></li>
+    <li data-href="#badges">Badges + avatars <kbd>02</kbd></li>
+    <li data-href="#tips">Tooltip + popover <kbd>03</kbd></li>
+    <li data-href="#dialogs">Dialog + command palette <kbd>04</kbd></li>
+    <li data-href="#tabs">Tabs <kbd>05</kbd></li>
+    <li data-href="#toasts">Toasts <kbd>06</kbd></li>
+    <li data-href="#forms">Forms + wizard <kbd>07</kbd></li>
+    <li data-href="#table">Comparison table <kbd>08</kbd></li>
+    <li data-href="#feedback">Feedback states <kbd>09</kbd></li>
+    <li data-href="#navbits">Breadcrumbs + pagination <kbd>10</kbd></li>
+    <li data-href="#media">Gallery + carousel <kbd>11</kbd></li>
+    <li data-href="#fourohfour">404 page <kbd>12</kbd></li>
+  </ul>
+</dialog>
+
+<!-- LIGHTBOX -->
+<dialog id="lightbox">
+  <figure style="margin:0;">
+    <div class="art" id="lightbox-art"></div>
+    <figcaption><span id="lightbox-cap"></span><button class="btn ghost sm" onclick="this.closest('dialog').close()">CLOSE</button></figcaption>
+  </figure>
+</dialog>
+
+<!-- TOASTS MOUNT -->
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<!-- COOKIE BANNER -->
+<div class="cookies" id="cookies" role="region" aria-label="Cookie consent">
+  <p><b style="color:var(--sand)">Cookies, minus the dark patterns.</b> We use one analytics cookie to count visits. That's the whole list.</p>
+  <div class="row">
+    <button class="btn solid sm" onclick="document.getElementById('cookies').classList.add('is-hidden'); toast('Thanks', 'Analytics enabled.', 'var(--ok)')">ALLOW</button>
+    <button class="btn ghost sm" onclick="document.getElementById('cookies').classList.add('is-hidden')">DECLINE</button>
+  </div>
+</div>
+
+<!-- BACK TO TOP -->
+<button class="totop" aria-label="Back to top" onclick="scrollTo({top:0, behavior:'smooth'})">↑</button>
+
+<footer class="site">
+  <span>MAXIMA COMPONENT LAB · ONE FILE · ZERO DEPENDENCIES</span>
+  <a href="maxima-03-company.html">← BACK TO THE MAIN SITE</a>
+</footer>
+
+<script>
+  /* ---- theme flip ---- */
+  const flip = document.getElementById('flip');
+  flip.addEventListener('click', () => {
+    const go = () => document.documentElement.dataset.theme =
+      document.documentElement.dataset.theme === 'ink' ? 'solar' : 'ink';
+    if (document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches)
+      document.startViewTransition(go); else go();
+  });
+
+  /* ---- toasts ---- */
+  function toast(title, msg, accent) {
+    const t = document.createElement('div');
+    t.className = 'toast'; t.style.setProperty('--accent', accent);
+    t.innerHTML = '<div><b>' + title + '</b><span>' + msg + '</span></div>';
+    document.getElementById('toasts').appendChild(t);
+    setTimeout(() => { t.classList.add('bye'); setTimeout(() => t.remove(), 300); }, 4000);
+  }
+
+  /* ---- modal ---- */
+  document.getElementById('open-modal').addEventListener('click', () =>
+    document.getElementById('modal').showModal());
+
+  /* ---- command palette (⌘K) ---- */
+  const palette = document.getElementById('palette');
+  const pq = document.getElementById('palette-q');
+  document.getElementById('open-palette').addEventListener('click', () => { palette.showModal(); pq.value=''; filter(); pq.focus(); });
+  addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault();
+      palette.open ? palette.close() : (palette.showModal(), pq.value='', filter(), pq.focus()); }
+  });
+  function filter() {
+    const q = pq.value.toLowerCase();
+    document.querySelectorAll('#palette-list li').forEach(li =>
+      li.hidden = !li.textContent.toLowerCase().includes(q));
+  }
+  pq.addEventListener('input', filter);
+  document.querySelectorAll('#palette-list li').forEach(li =>
+    li.addEventListener('click', () => { palette.close(); location.hash = li.dataset.href; }));
+
+  /* ---- tabs (with arrow keys) ---- */
+  const tabs = [...document.querySelectorAll('[role="tab"]')];
+  function selectTab(tab) {
+    tabs.forEach(t => {
+      const on = t === tab;
+      t.setAttribute('aria-selected', on);
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    });
+    tab.focus();
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => selectTab(t));
+    t.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight') selectTab(tabs[(i + 1) % tabs.length]);
+      if (e.key === 'ArrowLeft')  selectTab(tabs[(i - 1 + tabs.length) % tabs.length]);
+    });
+  });
+
+  /* ---- wizard ---- */
+  let step = 1; const STEPS = 3;
+  const wiz = document.getElementById('wizard');
+  const back = document.getElementById('wiz-back'), next = document.getElementById('wiz-next');
+  const labels = ['BASICS', 'SCOPE', 'DETAILS'];
+  function renderWiz() {
+    wiz.querySelectorAll('fieldset').forEach(f => f.hidden = +f.dataset.step !== step);
+    wiz.querySelectorAll('.wizdots i').forEach((d, i) => d.classList.toggle('on', i < step));
+    document.getElementById('wizlabel').textContent = 'STEP ' + step + ' OF 3 — ' + labels[step-1];
+    back.disabled = step === 1;
+    next.textContent = step === STEPS ? 'SUBMIT ✦' : 'NEXT →';
+  }
+  next.addEventListener('click', () => {
+    if (step < STEPS) { step++; renderWiz(); }
+    else {
+      wiz.querySelectorAll('fieldset, .wiznav, .wizdots').forEach(el => el.hidden = true);
+      wiz.querySelector('.done').hidden = false;
+      toast('Submitted', 'Project brief received.', 'var(--ok)');
+    }
+  });
+  back.addEventListener('click', () => { if (step > 1) { step--; renderWiz(); } });
+
+  /* ---- gallery lightbox ---- */
+  const lightbox = document.getElementById('lightbox');
+  document.querySelectorAll('.gallery button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.getElementById('lightbox-art').style.background = getComputedStyle(b).background;
+      document.getElementById('lightbox-cap').textContent = b.dataset.cap;
+      lightbox.showModal();
+    });
+  });
+
+  /* ---- carousel ---- */
+  const slider = document.getElementById('slider');
+  const slides = [...slider.children];
+  const dotsBox = document.getElementById('dots');
+  slides.forEach((s, i) => {
+    const d = document.createElement('button');
+    d.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+    d.addEventListener('click', () => slider.scrollTo({ left: slider.clientWidth * i, behavior: 'smooth' }));
+    dotsBox.appendChild(d);
+  });
+  function syncDots() {
+    const i = Math.round(slider.scrollLeft / slider.clientWidth);
+    [...dotsBox.children].forEach((d, j) => d.classList.toggle('on', j === i));
+  }
+  slider.addEventListener('scroll', () => requestAnimationFrame(syncDots));
+  syncDots();
+  document.getElementById('car-next').addEventListener('click', () => slider.scrollBy({ left: slider.clientWidth, behavior: 'smooth' }));
+  document.getElementById('car-prev').addEventListener('click', () => slider.scrollBy({ left: -slider.clientWidth, behavior: 'smooth' }));
+
+  /* ---- TOC scrollspy ---- */
+  const tocLinks = [...document.querySelectorAll('.toc a')];
+  const spy = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  document.querySelectorAll('.unit').forEach(u => spy.observe(u));
+</script>
+
+</body>
+</html>

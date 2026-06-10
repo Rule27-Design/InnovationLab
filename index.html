@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="ink">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MAXIMA — Creative Technology Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Instrument+Sans:wght@400;500;600&family=Martian+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================
+   MAXIMA·03 — full company template, one file, no deps
+   Components: header w/ mobile menu · aurora hero · logo wall
+   marquee · pinned scrub showcase · services (spotlight tilt)
+   scroll-counted stats · process timeline · case studies
+   snap carousel testimonials · pricing · team · animated FAQ
+   journal · CTA banner · contact form · mega footer
+   Effects: scroll-driven comet · designed scrollbar ·
+   progress beam · kinetic type · view() reveals · grain ·
+   view-transition theme flip · magnetic buttons
+   ========================================================== */
+
+@property --wght { syntax: "<number>";  inherits: true;  initial-value: 800; }
+@property --n    { syntax: "<integer>"; inherits: false; initial-value: 0; }
+
+:root {
+  --ink:       oklch(15% 0.05 295);
+  --ink-deep:  oklch(11% 0.04 285);
+  --sand:      oklch(96% 0.02 92);
+  --sand-dim:  oklch(76% 0.03 95);
+  --ultra:     oklch(68% 0.24 300);
+  --vermilion: oklch(67% 0.22 36);
+  --solar:     oklch(87% 0.165 95);
+  --cyan:      oklch(82% 0.14 200);
+  --line:      oklch(96% 0.02 92 / .13);
+
+  --font-display: "Bricolage Grotesque", system-ui, sans-serif;
+  --font-body:    "Instrument Sans", system-ui, sans-serif;
+  --font-mono:    "Martian Mono", monospace;
+
+  --gutter: clamp(1.25rem, 4vw, 4.5rem);
+  --beam-gradient: linear-gradient(90deg, var(--ultra), var(--vermilion), var(--solar));
+  color-scheme: dark;
+  interpolate-size: allow-keywords; /* animatable height:auto (FAQ) */
+}
+html[data-theme="solar"] {
+  --ink:      oklch(96% 0.025 95);
+  --ink-deep: oklch(91% 0.04 92);
+  --sand:     oklch(19% 0.06 300);
+  --sand-dim: oklch(40% 0.05 300);
+  --line:     oklch(19% 0.06 300 / .15);
+  color-scheme: light;
+}
+
+/* ============ DESIGNED SCROLLBAR ============ */
+::-webkit-scrollbar { width: 16px; height: 12px; }
+::-webkit-scrollbar-track {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 10px, oklch(96% 0.02 92 / .07) 10px 11px),
+    var(--ink-deep);
+  border-left: 1px solid var(--line);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--beam-gradient);
+  border-radius: 999px;
+  border: 4px solid var(--ink-deep);
+  min-height: 56px;
+}
+::-webkit-scrollbar-thumb:hover { border-width: 3px; }
+@supports not selector(::-webkit-scrollbar) {
+  html { scrollbar-color: var(--ultra) var(--ink-deep); }
+}
+
+/* ============ BASE ============ */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; font-family: var(--font-body); color: var(--sand);
+  background: var(--ink); overflow-x: clip; line-height: 1.55;
+}
+h1,h2,h3,h4 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+p { text-wrap: pretty; }
+img { max-width: 100%; }
+body::after { /* film grain */
+  content: ""; position: fixed; inset: -50%; z-index: 60; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: .045; mix-blend-mode: overlay;
+}
+
+/* ============ THE COMET ============
+   Rides an offset-path built in JS from a waypoint list,
+   rebuilt on resize so the ricochet stays proportional. */
+.comet-field { position: fixed; inset: 0; z-index: 4; pointer-events: none; overflow: clip; visibility: hidden; }
+.comet-field[data-ready] { visibility: visible; }
+.comet {
+  position: absolute; top: 0; left: 0; width: 16px; height: 16px; border-radius: 50%;
+  background: oklch(99% 0.01 95 / .9);
+  /* dimmed: tighter core, ~half the halo energy of v2 */
+  box-shadow:
+    0 0 10px 3px  oklch(99% 0.02 95 / .55),
+    0 0 32px 12px oklch(68% 0.24 300 / .5),
+    0 0 80px 34px oklch(68% 0.24 300 / .18);
+  mix-blend-mode: screen;
+  offset-rotate: 0deg;
+  translate: -8px -8px; /* center the dot on the path */
+}
+html[data-theme="solar"] .comet { mix-blend-mode: multiply; background: var(--ultra); }
+.comet-trail {
+  position: absolute; top: 0; left: 0; width: 64px; height: 64px; border-radius: 50%;
+  filter: blur(26px);
+  background: radial-gradient(circle, var(--vermilion), transparent 70%);
+  mix-blend-mode: screen; opacity: .45;
+  offset-rotate: 0deg;
+  translate: -32px -32px;
+}
+html[data-theme="solar"] .comet-trail { mix-blend-mode: multiply; }
+@keyframes ride { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+@keyframes swell { 0%, 90% { scale: 1; } 100% { scale: 2; } }
+@keyframes comet-hue { 33% { filter: hue-rotate(110deg); } 66% { filter: hue-rotate(220deg); } 100% { filter: hue-rotate(330deg); } }
+@supports (animation-timeline: scroll()) {
+  .comet {
+    animation: ride linear both, swell linear both, comet-hue linear both;
+    animation-timeline: scroll(root), scroll(root), scroll(root);
+  }
+  .comet-trail {
+    animation: ride linear both, comet-hue linear both;
+    animation-timeline: scroll(root), scroll(root);
+    /* the soft halo lags just a touch behind the dot */
+    animation-range: 0.4% 100%, 0% 100%;
+  }
+}
+@supports not (animation-timeline: scroll()) { .comet-field { display: none; } }
+
+/* ============ PROGRESS BEAM ============ */
+.beam {
+  position: fixed; inset: 0 0 auto 0; height: 5px; z-index: 50;
+  background: var(--beam-gradient); transform-origin: 0 50%; transform: scaleX(0);
+}
+@keyframes beam-grow { to { transform: scaleX(1); } }
+@supports (animation-timeline: scroll()) {
+  .beam { animation: beam-grow linear both; animation-timeline: scroll(root); }
+}
+@supports not (animation-timeline: scroll()) { .beam { display: none; } }
+
+/* ============ HEADER + MOBILE MENU ============ */
+header.site {
+  position: fixed; top: 5px; left: 0; right: 0; z-index: 40;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: .9rem var(--gutter);
+  backdrop-filter: blur(14px) saturate(1.3);
+  background: color-mix(in oklch, var(--ink) 55%, transparent);
+  border-bottom: 1px solid var(--line);
+}
+header.site .logo { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; text-decoration: none; color: var(--sand); letter-spacing: .04em; }
+header.site .logo span { color: var(--vermilion); }
+header.site nav { display: flex; gap: 1.4rem; font-family: var(--font-mono); font-size: .65rem; }
+header.site nav a { text-decoration: none; color: var(--sand-dim); transition: color .2s; }
+header.site nav a:hover, header.site nav a:focus-visible { color: var(--sand); }
+header.site .menu-toggle { display: none; }
+header.site label[for="menu"] {
+  display: none; font-family: var(--font-mono); font-size: .65rem;
+  border: 1px solid var(--line); border-radius: 999px; padding: .5rem 1rem; cursor: pointer;
+}
+@media (max-width: 880px) {
+  header.site label[for="menu"] { display: block; }
+  header.site nav {
+    position: absolute; top: 100%; left: 0; right: 0;
+    display: none; padding: 1.2rem var(--gutter) 1.6rem;
+    flex-direction: column; gap: 1rem;
+    background: color-mix(in oklch, var(--ink) 92%, transparent);
+    backdrop-filter: blur(18px); border-bottom: 1px solid var(--line);
+  }
+  header.site:has(#menu:checked) nav { display: flex; }
+}
+
+/* ============ HERO ============ */
+.hero {
+  min-height: 100svh; display: grid; align-content: center; gap: 1.5rem;
+  padding: 7.5rem var(--gutter) 4rem; position: relative; isolation: isolate; overflow: clip;
+}
+.aurora { position: absolute; inset: 0; z-index: -2; filter: blur(70px) saturate(1.2); opacity: .8; }
+.aurora i { position: absolute; border-radius: 50%; }
+.aurora i:nth-child(1) { width: 55vw; height: 55vw; left: -12vw; top: -18vw; background: var(--ultra);     animation: drift1 22s ease-in-out infinite alternate; }
+.aurora i:nth-child(2) { width: 45vw; height: 45vw; right: -10vw; top: 8vw;  background: var(--vermilion); animation: drift2 26s ease-in-out infinite alternate; }
+.aurora i:nth-child(3) { width: 38vw; height: 38vw; left: 28vw; bottom: -20vw; background: var(--cyan);    animation: drift3 30s ease-in-out infinite alternate; opacity: .7; }
+@keyframes drift1 { to { translate: 9vw 7vw;   scale: 1.15; } }
+@keyframes drift2 { to { translate: -8vw 10vw; scale: .9; } }
+@keyframes drift3 { to { translate: -10vw -6vw; scale: 1.2; } }
+.hero .echo {
+  position: absolute; z-index: -1; inset: auto 0 4svh 0;
+  font-family: var(--font-display); font-weight: 800; text-transform: uppercase;
+  font-size: clamp(6rem, 24vw, 22rem); line-height: 1; text-align: center;
+  color: transparent; -webkit-text-stroke: 1px oklch(96% 0.02 92 / .10);
+  pointer-events: none; user-select: none;
+}
+.eyebrow { font-family: var(--font-mono); font-size: .68rem; letter-spacing: .22em; text-transform: uppercase; color: var(--solar); }
+.hero h1 {
+  font-size: clamp(2.8rem, 11vw, 10rem); line-height: .92; letter-spacing: -.02em;
+  text-transform: uppercase;
+  font-variation-settings: "wght" var(--wght), "opsz" 96;
+}
+@keyframes thin-out { from { --wght: 800; } to { --wght: 220; } }
+@supports (animation-timeline: scroll()) {
+  .hero h1 { animation: thin-out linear both; animation-timeline: scroll(root); animation-range: 0 130svh; }
+}
+.hero h1 em {
+  font-style: normal;
+  background: var(--beam-gradient);
+  background-clip: text; -webkit-background-clip: text; color: transparent;
+}
+.hero .lede { max-width: 48ch; font-size: clamp(1.05rem, 1.6vw, 1.3rem); color: var(--sand-dim); margin: 0; }
+.hero .actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: .5rem; }
+.hero .hint {
+  position: absolute; bottom: 1.6rem; right: var(--gutter);
+  font-family: var(--font-mono); font-size: .64rem; color: var(--sand-dim);
+  display: flex; align-items: center; gap: .6rem;
+}
+.hero .hint::after { content: "→"; rotate: 90deg; animation: nudge 1.6s ease-in-out infinite; }
+@keyframes nudge { 50% { translate: 0 5px; } }
+
+/* buttons */
+.btn {
+  font-family: var(--font-mono); font-size: .7rem; letter-spacing: .14em;
+  padding: 1rem 2.1rem; border-radius: 999px; cursor: pointer; text-decoration: none;
+  display: inline-block; transition: scale .15s ease, box-shadow .2s; will-change: transform;
+  border: 1px solid transparent; text-align: center;
+}
+.btn.solid { color: var(--ink); background: var(--sand); border-color: var(--sand); }
+.btn.ghost { color: var(--sand); background: transparent; border-color: var(--line); }
+.btn:hover { scale: 1.04; }
+.btn.solid:hover { box-shadow: 0 0 40px oklch(68% 0.24 300 / .5); }
+.btn.ghost:hover { border-color: var(--sand-dim); }
+
+/* ============ LOGO WALL ============ */
+.logowall {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 1px; background: var(--line); border-block: 1px solid var(--line);
+}
+.logowall div {
+  background: var(--ink); padding: 1.6rem 1rem; text-align: center;
+  font-family: var(--font-mono); font-size: .68rem; letter-spacing: .18em;
+  color: var(--sand-dim); transition: color .25s, background .25s;
+}
+.logowall div:hover { color: var(--sand); background: color-mix(in oklch, var(--sand) 5%, var(--ink)); }
+
+/* ============ MARQUEE ============ */
+.marquee {
+  border-bottom: 1px solid var(--line); overflow: hidden; white-space: nowrap;
+  padding-block: .85rem; font-family: var(--font-mono); font-size: .7rem;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--sand-dim);
+}
+.marquee .track { display: inline-block; animation: slide 30s linear infinite; }
+.marquee span { padding-inline: 1.4rem; }
+.marquee b { color: var(--vermilion); font-weight: 400; }
+@keyframes slide { to { transform: translateX(-50%); } }
+
+/* ============ SECTION SCAFFOLD ============ */
+section.block { padding: clamp(5rem, 11vh, 8.5rem) var(--gutter); position: relative; z-index: 6; }
+.kicker { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 2.2rem; }
+.kicker .no { font-family: var(--font-mono); font-size: .68rem; color: var(--solar); }
+.kicker h2 { font-size: clamp(2rem, 5.2vw, 4rem); font-weight: 750; letter-spacing: -.015em; line-height: 1.02; }
+.intro { max-width: 58ch; color: var(--sand-dim); margin: -1.1rem 0 2.8rem; }
+
+/* reveal-on-scroll utility */
+@keyframes rise { from { opacity: 0; translate: 0 60px; scale: .97; } }
+@supports (animation-timeline: view()) {
+  .reveal { animation: rise linear both; animation-timeline: view(); animation-range: entry 0% entry 55%; }
+}
+
+/* ============ PINNED SHOWCASE ============ */
+.showcase { height: 300svh; position: relative; view-timeline: --show block; }
+.stage { position: sticky; top: 0; height: 100svh; overflow: clip; display: grid; place-items: center; perspective: 1200px; }
+.panel {
+  width: min(78vw, 760px); aspect-ratio: 16 / 10;
+  border-radius: 24px; border: 1px solid oklch(96% 0.02 92 / .2);
+  background:
+    linear-gradient(165deg, oklch(96% 0.02 92 / .10), oklch(96% 0.02 92 / .03) 40%),
+    color-mix(in oklch, var(--ink-deep) 88%, black);
+  box-shadow: 0 60px 120px -30px oklch(0% 0 0 / .7), inset 0 1px 0 oklch(96% 0.02 92 / .25);
+  backdrop-filter: blur(6px);
+  transform: rotateX(48deg) scale(.7) translateY(14svh);
+  display: grid; grid-template-rows: auto 1fr; overflow: clip;
+}
+@keyframes panel-rise {
+  0%   { transform: rotateX(48deg) scale(.7)  translateY(14svh); opacity: .4; }
+  35%  { transform: rotateX(18deg) scale(.88) translateY(4svh);  opacity: 1; }
+  70%  { transform: rotateX(0deg)  scale(1)   translateY(0); }
+  100% { transform: rotateX(-4deg) scale(1.04) translateY(-2svh); }
+}
+.panel .bar {
+  display: flex; align-items: center; gap: .5rem; padding: .8rem 1.1rem;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono); font-size: .56rem; color: var(--sand-dim); letter-spacing: .12em;
+}
+.panel .bar i { width: 10px; height: 10px; border-radius: 50%; }
+.panel .bar i:nth-child(1) { background: var(--vermilion); }
+.panel .bar i:nth-child(2) { background: var(--solar); }
+.panel .bar i:nth-child(3) { background: var(--cyan); }
+.panel .bar span { margin-left: auto; }
+.panel .screen { display: grid; grid-template-columns: 1.1fr .9fr; gap: 1.2rem; padding: 1.2rem; }
+.panel .ring {
+  place-self: center; width: min(34cqw, 200px); aspect-ratio: 1; border-radius: 50%;
+  background:
+    radial-gradient(closest-side, var(--ink-deep) 78%, transparent 79% 100%),
+    conic-gradient(var(--ultra) 0 62%, var(--vermilion) 62% 78%, var(--solar) 78% 90%, oklch(96% 0.02 92 / .12) 90%);
+  display: grid; place-items: center;
+  font-family: var(--font-display); font-weight: 800; font-size: clamp(1.4rem, 4cqw, 2.2rem);
+}
+.panel .bars { display: grid; align-content: end; gap: .55rem; }
+.panel .bars i {
+  height: 12px; border-radius: 999px;
+  background: linear-gradient(90deg, var(--ultra), var(--vermilion));
+  transform-origin: left; transform: scaleX(var(--w, .5));
+}
+@keyframes bars-in { from { transform: scaleX(0); } }
+@supports (animation-timeline: scroll()) {
+  .panel { animation: panel-rise linear both; animation-timeline: --show; animation-range: contain 0% contain 90%; }
+  .panel .bars i { animation: bars-in linear both; animation-timeline: --show; animation-range: contain 25% contain 60%; }
+}
+.caption {
+  position: absolute; bottom: 9svh; left: 0; right: 0; text-align: center;
+  font-family: var(--font-mono); font-size: .7rem; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--sand-dim); opacity: 0; padding-inline: var(--gutter);
+}
+.caption b { color: var(--sand); font-weight: 400; }
+@keyframes cap { 0% { opacity: 0; translate: 0 14px; } 25%, 75% { opacity: 1; translate: 0 0; } 100% { opacity: 0; translate: 0 -14px; } }
+@supports (animation-timeline: scroll()) {
+  .cap-1 { animation: cap linear both; animation-timeline: --show; animation-range: contain 0%  contain 35%; }
+  .cap-2 { animation: cap linear both; animation-timeline: --show; animation-range: contain 30% contain 65%; }
+  .cap-3 { animation: cap linear both; animation-timeline: --show; animation-range: contain 60% contain 95%; }
+}
+@supports not (animation-timeline: scroll()) {
+  .showcase { height: auto; }
+  .stage { position: static; height: auto; padding: 5rem var(--gutter); }
+  .panel { transform: none; }
+  .caption { display: none; }
+}
+
+/* ============ SERVICES (spotlight tilt cards) ============ */
+.grid { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+.card {
+  position: relative; border: 1px solid var(--line); border-radius: 18px;
+  padding: 1.6rem 1.5rem 1.5rem; display: grid; gap: .7rem; align-content: start;
+  background: color-mix(in oklch, var(--sand) 4%, transparent);
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform .18s ease-out;
+  overflow: clip;
+}
+.card::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 50%), oklch(96% 0.02 92 / .12), transparent 65%);
+  opacity: 0; transition: opacity .25s;
+}
+.card:hover::after { opacity: 1; }
+.card .tag { font-family: var(--font-mono); font-size: .6rem; color: var(--ultra); letter-spacing: .14em; }
+.card h3 { font-size: 1.3rem; font-weight: 700; }
+.card p { margin: 0; font-size: .93rem; color: var(--sand-dim); }
+.card .more { font-family: var(--font-mono); font-size: .62rem; color: var(--solar); text-decoration: none; margin-top: .4rem; }
+.card .more:hover { text-decoration: underline; }
+
+/* ============ STATS (scroll-counted) ============ */
+.stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1px; background: var(--line); border-block: 1px solid var(--line);
+}
+.stat { background: var(--ink); padding: 2.6rem 1.6rem; display: grid; gap: .4rem; }
+.stat b {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(2.6rem, 6vw, 4.4rem); line-height: 1;
+  --n: var(--target); /* static fallback when timelines unsupported */
+}
+.stat b::after { counter-reset: nn var(--n); content: counter(nn) attr(data-suffix); }
+@keyframes count-up { from { --n: 0; } }
+@supports (animation-timeline: view()) {
+  .stat b { animation: count-up linear both; animation-timeline: view(); animation-range: entry 0% entry 90%; }
+}
+.stat span { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .15em; color: var(--sand-dim); text-transform: uppercase; }
+.stat:nth-child(1) b::after { color: var(--ultra); }
+.stat:nth-child(2) b::after { color: var(--vermilion); }
+.stat:nth-child(3) b::after { color: var(--solar); }
+.stat:nth-child(4) b::after { color: var(--cyan); }
+
+/* ============ PROCESS TIMELINE ============ */
+.process { display: grid; gap: 0; max-width: 880px; }
+.step {
+  display: grid; grid-template-columns: 4.2rem 1fr; gap: 1.4rem;
+  padding-block: 1.9rem; border-bottom: 1px solid var(--line); position: relative;
+}
+.step:first-child { border-top: 1px solid var(--line); }
+.step .num {
+  font-family: var(--font-mono); font-size: .68rem; color: var(--solar);
+  display: grid; place-content: start center; padding-top: .35rem;
+}
+.step h3 { font-size: 1.45rem; font-weight: 700; margin-bottom: .35rem; }
+.step p { margin: 0; color: var(--sand-dim); max-width: 58ch; }
+.step .dur { font-family: var(--font-mono); font-size: .6rem; color: var(--ultra); letter-spacing: .12em; margin-top: .6rem; display: block; }
+.step::before {
+  content: ""; position: absolute; left: 0; bottom: -1px; height: 1px; width: 100%;
+  background: var(--beam-gradient); transform: scaleX(0); transform-origin: left;
+}
+@keyframes wipe { to { transform: scaleX(1); } }
+@supports (animation-timeline: view()) {
+  .step::before { animation: wipe linear both; animation-timeline: view(); animation-range: entry 30% entry 100%; }
+}
+
+/* ============ CASE STUDIES ============ */
+.case {
+  display: grid; gap: 2.2rem; align-items: center;
+  grid-template-columns: 1.15fr .85fr; margin-bottom: 4.5rem;
+}
+.case:nth-of-type(even) { grid-template-columns: .85fr 1.15fr; }
+.case:nth-of-type(even) .case-art { order: 2; }
+.case:last-of-type { margin-bottom: 0; }
+.case-art {
+  aspect-ratio: 16/11; border-radius: 22px; overflow: clip; position: relative;
+  border: 1px solid var(--line);
+}
+.case-art .fill {
+  position: absolute; inset: 0; transition: scale .6s cubic-bezier(.2,.7,.2,1);
+  display: grid; place-items: center;
+}
+.case:hover .case-art .fill { scale: 1.06; }
+.case-art .wordmark {
+  font-family: var(--font-display); font-weight: 800; letter-spacing: .04em;
+  font-size: clamp(2rem, 5vw, 3.6rem); color: oklch(98% 0.01 95 / .92);
+  text-transform: uppercase; mix-blend-mode: overlay;
+}
+.fill.f-halcyon { background: radial-gradient(circle at 30% 25%, var(--ultra), transparent 60%), radial-gradient(circle at 75% 80%, var(--cyan), transparent 55%), var(--ink-deep); }
+.fill.f-oro     { background: radial-gradient(circle at 70% 25%, var(--solar), transparent 60%), radial-gradient(circle at 25% 80%, var(--vermilion), transparent 55%), var(--ink-deep); }
+.fill.f-vanta   { background: radial-gradient(circle at 50% 15%, var(--vermilion), transparent 55%), radial-gradient(circle at 80% 85%, var(--ultra), transparent 50%), var(--ink-deep); }
+.case-copy .tag { font-family: var(--font-mono); font-size: .6rem; color: var(--ultra); letter-spacing: .14em; }
+.case-copy h3 { font-size: clamp(1.7rem, 3.4vw, 2.6rem); font-weight: 750; margin: .5rem 0 .8rem; }
+.case-copy p { color: var(--sand-dim); margin: 0 0 1rem; max-width: 50ch; }
+.case-copy .result {
+  display: flex; gap: 2rem; flex-wrap: wrap; margin: 1.2rem 0 1.4rem;
+}
+.case-copy .result div b { font-family: var(--font-display); font-weight: 800; font-size: 1.7rem; display: block; color: var(--solar); }
+.case-copy .result div span { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .12em; color: var(--sand-dim); text-transform: uppercase; }
+@media (max-width: 820px) {
+  .case, .case:nth-of-type(even) { grid-template-columns: 1fr; }
+  .case:nth-of-type(even) .case-art { order: 0; }
+}
+
+/* ============ TESTIMONIALS (snap carousel) ============ */
+.quotes {
+  display: grid; grid-auto-flow: column; grid-auto-columns: min(82vw, 460px);
+  gap: 1.1rem; overflow-x: auto; padding: .4rem .4rem 1.4rem;
+  scroll-snap-type: x mandatory; scrollbar-width: thin;
+}
+.quotes::-webkit-scrollbar { height: 10px; }
+.quotes::-webkit-scrollbar-track { background: transparent; border: 0; }
+.quotes::-webkit-scrollbar-thumb { border-width: 2px; }
+.quote {
+  scroll-snap-align: start;
+  border: 1px solid var(--line); border-radius: 18px; padding: 1.8rem 1.7rem;
+  display: grid; gap: 1.1rem; align-content: space-between;
+  background: color-mix(in oklch, var(--sand) 4%, transparent);
+}
+.quote blockquote { margin: 0; font-size: 1.05rem; line-height: 1.6; }
+.quote blockquote::before { content: "“"; font-family: var(--font-display); font-size: 2.4rem; line-height: 0; vertical-align: -0.45em; color: var(--vermilion); margin-right: .2rem; }
+.quote .who { display: flex; gap: .9rem; align-items: center; }
+.quote .who i { width: 42px; height: 42px; border-radius: 50%; flex: none; }
+.quote:nth-child(1) .who i { background: conic-gradient(from 200deg, var(--ultra), var(--cyan)); }
+.quote:nth-child(2) .who i { background: conic-gradient(from 90deg, var(--vermilion), var(--solar)); }
+.quote:nth-child(3) .who i { background: conic-gradient(from 320deg, var(--solar), var(--ultra)); }
+.quote:nth-child(4) .who i { background: conic-gradient(from 10deg, var(--cyan), var(--vermilion)); }
+.quote .who b { display: block; font-size: .92rem; }
+.quote .who span { font-family: var(--font-mono); font-size: .58rem; color: var(--sand-dim); letter-spacing: .1em; }
+.drag-hint { font-family: var(--font-mono); font-size: .6rem; color: var(--sand-dim); letter-spacing: .12em; }
+
+/* ============ PRICING ============ */
+.tiers { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); align-items: stretch; }
+.tier {
+  border: 1px solid var(--line); border-radius: 20px; padding: 2rem 1.8rem;
+  display: grid; gap: 1.1rem; align-content: start;
+  background: color-mix(in oklch, var(--sand) 3%, transparent);
+}
+.tier.featured {
+  border-color: transparent; position: relative;
+  background:
+    linear-gradient(var(--ink), var(--ink)) padding-box,
+    var(--beam-gradient) border-box;
+  border: 2px solid transparent;
+  box-shadow: 0 30px 80px -30px oklch(68% 0.24 300 / .45);
+}
+.tier .name { font-family: var(--font-mono); font-size: .64rem; letter-spacing: .16em; color: var(--solar); text-transform: uppercase; }
+.tier .price { font-family: var(--font-display); font-weight: 800; font-size: clamp(2.2rem, 4.5vw, 3.2rem); line-height: 1; }
+.tier .price small { font-family: var(--font-mono); font-size: .6rem; font-weight: 400; color: var(--sand-dim); letter-spacing: .1em; }
+.tier ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; }
+.tier li { font-size: .92rem; color: var(--sand-dim); padding-left: 1.3rem; position: relative; }
+.tier li::before { content: "→"; position: absolute; left: 0; color: var(--vermilion); }
+.tier .btn { justify-self: start; margin-top: .4rem; }
+
+/* ============ TEAM ============ */
+.team { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.person {
+  border: 1px solid var(--line); border-radius: 18px; overflow: clip;
+  background: color-mix(in oklch, var(--sand) 3%, transparent);
+}
+.person .face {
+  aspect-ratio: 1; display: grid; place-items: center;
+  font-family: var(--font-display); font-weight: 800; font-size: 3rem;
+  color: oklch(98% 0.01 95 / .9);
+}
+.person:nth-child(1) .face { background: radial-gradient(circle at 30% 30%, var(--ultra), var(--ink-deep)); }
+.person:nth-child(2) .face { background: radial-gradient(circle at 70% 30%, var(--vermilion), var(--ink-deep)); }
+.person:nth-child(3) .face { background: radial-gradient(circle at 30% 70%, var(--solar), var(--ink-deep)); }
+.person:nth-child(4) .face { background: radial-gradient(circle at 70% 70%, var(--cyan), var(--ink-deep)); }
+.person:nth-child(5) .face { background: radial-gradient(circle at 50% 20%, var(--vermilion), var(--ultra) 70%, var(--ink-deep)); }
+.person:nth-child(6) .face { background: radial-gradient(circle at 20% 50%, var(--cyan), var(--solar) 75%, var(--ink-deep)); }
+.person .meta { padding: 1.1rem 1.2rem 1.25rem; }
+.person .meta b { display: block; font-size: .98rem; }
+.person .meta span { font-family: var(--font-mono); font-size: .58rem; color: var(--sand-dim); letter-spacing: .1em; text-transform: uppercase; }
+
+/* ============ FAQ (animated details) ============ */
+.faq { max-width: 820px; display: grid; }
+.faq details { border-bottom: 1px solid var(--line); }
+.faq details:first-child { border-top: 1px solid var(--line); }
+.faq summary {
+  cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center;
+  gap: 1rem; padding: 1.4rem .2rem; font-family: var(--font-display); font-weight: 700; font-size: 1.12rem;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: "+"; font-family: var(--font-mono); color: var(--vermilion);
+  font-size: 1.1rem; transition: rotate .3s;
+}
+.faq details[open] summary::after { rotate: 45deg; }
+.faq details::details-content {
+  block-size: 0; overflow: clip;
+  transition: block-size .35s ease, content-visibility .35s allow-discrete;
+}
+.faq details[open]::details-content { block-size: auto; }
+.faq .a { padding: 0 .2rem 1.5rem; color: var(--sand-dim); max-width: 64ch; }
+
+/* ============ JOURNAL ============ */
+.posts { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+.post {
+  border: 1px solid var(--line); border-radius: 18px; overflow: clip; text-decoration: none; color: inherit;
+  display: grid; background: color-mix(in oklch, var(--sand) 3%, transparent);
+  transition: translate .25s ease, box-shadow .25s ease;
+}
+.post:hover { translate: 0 -6px; box-shadow: 0 24px 60px -28px oklch(0% 0 0 / .8); }
+.post .cover { aspect-ratio: 16/9; }
+.post:nth-child(1) .cover { background: linear-gradient(130deg, var(--ultra), var(--ink-deep) 75%); }
+.post:nth-child(2) .cover { background: linear-gradient(130deg, var(--vermilion), var(--ink-deep) 75%); }
+.post:nth-child(3) .cover { background: linear-gradient(130deg, var(--cyan), var(--ink-deep) 75%); }
+.post .body { padding: 1.3rem 1.3rem 1.5rem; display: grid; gap: .55rem; }
+.post .date { font-family: var(--font-mono); font-size: .58rem; color: var(--solar); letter-spacing: .14em; }
+.post h3 { font-size: 1.18rem; font-weight: 700; }
+.post p { margin: 0; font-size: .9rem; color: var(--sand-dim); }
+
+/* ============ CTA BANNER ============ */
+.banner {
+  margin-inline: var(--gutter); border-radius: 26px; overflow: clip; position: relative; isolation: isolate;
+  padding: clamp(3rem, 8vw, 6rem) clamp(1.6rem, 5vw, 5rem); text-align: center;
+  border: 1px solid var(--line);
+}
+.banner::before {
+  content: ""; position: absolute; inset: -40%; z-index: -1; filter: blur(60px); opacity: .55;
+  background:
+    radial-gradient(circle at 20% 30%, var(--ultra), transparent 45%),
+    radial-gradient(circle at 80% 40%, var(--vermilion), transparent 45%),
+    radial-gradient(circle at 50% 90%, var(--solar), transparent 40%);
+  animation: spin-bg 18s linear infinite;
+}
+@keyframes spin-bg { to { rotate: 360deg; } }
+.banner h2 { font-size: clamp(2.2rem, 6vw, 4.8rem); font-weight: 780; line-height: 1; }
+.banner p { color: var(--sand-dim); max-width: 50ch; margin: 1.1rem auto 1.8rem; }
+
+/* ============ CONTACT ============ */
+.contact { display: grid; gap: 2.5rem; grid-template-columns: 1fr 1fr; align-items: start; }
+@media (max-width: 820px) { .contact { grid-template-columns: 1fr; } }
+.contact .info p { color: var(--sand-dim); max-width: 44ch; }
+.contact .info .line { display: grid; gap: .2rem; margin-top: 1.4rem; }
+.contact .info .line span { font-family: var(--font-mono); font-size: .58rem; letter-spacing: .14em; color: var(--solar); text-transform: uppercase; }
+.contact .info .line a, .contact .info .line b { font-size: 1.05rem; color: var(--sand); text-decoration: none; font-weight: 600; }
+.contact .info .line a:hover { color: var(--vermilion); }
+form.lead { display: grid; gap: 1rem; }
+form.lead .row { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; }
+@media (max-width: 560px) { form.lead .row { grid-template-columns: 1fr; } }
+form.lead label { display: grid; gap: .45rem; font-family: var(--font-mono); font-size: .58rem; letter-spacing: .14em; color: var(--sand-dim); text-transform: uppercase; }
+form.lead input, form.lead select, form.lead textarea {
+  font-family: var(--font-body); font-size: .95rem; color: var(--sand);
+  background: color-mix(in oklch, var(--sand) 5%, transparent);
+  border: 1px solid var(--line); border-radius: 12px; padding: .85rem 1rem;
+  transition: border-color .2s;
+}
+form.lead :is(input, select, textarea):focus { outline: none; border-color: var(--ultra); }
+form.lead textarea { min-height: 120px; resize: vertical; }
+form.lead .sent { display: none; font-family: var(--font-mono); font-size: .66rem; color: var(--solar); letter-spacing: .12em; }
+form.lead.is-sent .sent { display: block; }
+form.lead.is-sent button { display: none; }
+
+/* ============ FOOTER ============ */
+footer.site { border-top: 1px solid var(--line); padding: 4rem var(--gutter) 3rem; position: relative; z-index: 6; }
+.foot-grid { display: grid; gap: 2.4rem; grid-template-columns: 2fr 1fr 1fr 1.4fr; }
+@media (max-width: 880px) { .foot-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .foot-grid { grid-template-columns: 1fr; } }
+.foot-grid h4 { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .16em; color: var(--solar); text-transform: uppercase; font-weight: 400; margin-bottom: 1rem; }
+.foot-grid ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .6rem; }
+.foot-grid a { color: var(--sand-dim); text-decoration: none; font-size: .92rem; }
+.foot-grid a:hover { color: var(--sand); }
+.foot-grid .about p { color: var(--sand-dim); font-size: .92rem; max-width: 36ch; margin: .8rem 0 0; }
+.news { display: grid; gap: .7rem; }
+.news input {
+  font-family: var(--font-body); font-size: .92rem; color: var(--sand);
+  background: color-mix(in oklch, var(--sand) 5%, transparent);
+  border: 1px solid var(--line); border-radius: 999px; padding: .8rem 1.2rem;
+}
+.news input:focus { outline: none; border-color: var(--ultra); }
+.news .btn { padding-block: .8rem; }
+.foot-mark {
+  margin-top: 3.5rem; overflow: clip;
+  font-family: var(--font-display); font-weight: 800; text-transform: uppercase;
+  font-size: clamp(4rem, 17vw, 16rem); line-height: .82; text-align: center;
+  background: var(--beam-gradient);
+  background-clip: text; -webkit-background-clip: text; color: transparent;
+  opacity: .9; user-select: none;
+}
+.foot-legal {
+  display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between;
+  margin-top: 2.4rem; font-family: var(--font-mono); font-size: .58rem; color: var(--sand-dim); letter-spacing: .1em;
+}
+.foot-legal a { color: inherit; }
+
+/* ============ THEME FLIP / A11Y / MOTION ============ */
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .7s; }
+:focus-visible { outline: 2px solid var(--solar); outline-offset: 3px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  html { scroll-behavior: auto; }
+  .comet-field { display: none; }
+  .showcase { height: auto; }
+  .stage { position: static; height: auto; padding: 5rem var(--gutter); }
+  .panel { transform: none; }
+  .caption { display: none; }
+}
+@media (max-width: 640px) {
+  .panel .screen { grid-template-columns: 1fr; }
+  .panel .bars { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="beam" aria-hidden="true"></div>
+
+<div class="comet-field" aria-hidden="true">
+  <div class="comet-trail"></div>
+  <div class="comet"></div>
+</div>
+
+<header class="site">
+  <a class="logo" href="#top">MAXIMA<span>.</span></a>
+  <input type="checkbox" id="menu" class="menu-toggle">
+  <label for="menu">MENU</label>
+  <nav aria-label="Sections">
+    <a href="#work">WORK</a>
+    <a href="#services">SERVICES</a>
+    <a href="#process">PROCESS</a>
+    <a href="#pricing">PRICING</a>
+    <a href="#team">TEAM</a>
+    <a href="#faq">FAQ</a>
+    <a href="#journal">JOURNAL</a>
+    <a href="#contact">CONTACT</a>
+    <a href="maxima-lab.html" style="color: var(--solar);">LAB ↗</a>
+  </nav>
+</header>
+
+<main id="top">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="echo" aria-hidden="true">MAXIMA</div>
+    <p class="eyebrow">Creative technology studio · Phoenix → everywhere</p>
+    <h1>We build<br>brands that<br><em>move</em></h1>
+    <p class="lede">MAXIMA is a 38-person studio shipping brand systems, products, and AI-powered platforms for companies that refuse to look like everyone else. The light flying across your screen? That's your scrollbar talking.</p>
+    <div class="actions">
+      <a class="btn solid magnet" href="#contact">START A PROJECT</a>
+      <a class="btn ghost magnet" href="#work">SEE THE WORK</a>
+    </div>
+    <p class="hint">SCROLL — THE COMET FLIES WITH YOU</p>
+  </section>
+
+  <!-- ============ LOGO WALL ============ -->
+  <div class="logowall" aria-label="Selected clients">
+    <div>HALCYON</div><div>ORO COFFEE</div><div>VANTA HEALTH</div><div>NORTHWIND</div>
+    <div>KILN+CO</div><div>SAGUARO LABS</div><div>PARALLAX</div><div>MERIDIAN</div>
+  </div>
+
+  <!-- ============ MARQUEE ============ -->
+  <div class="marquee" aria-hidden="true">
+    <div class="track">
+      <span>brand systems <b>·</b></span><span>product engineering <b>·</b></span><span>ai integration <b>·</b></span><span>motion &amp; interaction <b>·</b></span><span>commerce <b>·</b></span><span>data &amp; analytics <b>·</b></span><span>now booking q3 <b>·</b></span>
+      <span>brand systems <b>·</b></span><span>product engineering <b>·</b></span><span>ai integration <b>·</b></span><span>motion &amp; interaction <b>·</b></span><span>commerce <b>·</b></span><span>data &amp; analytics <b>·</b></span><span>now booking q3 <b>·</b></span>
+    </div>
+  </div>
+
+  <!-- ============ PINNED SHOWCASE ============ -->
+  <section class="showcase" aria-label="Product showcase">
+    <div class="stage">
+      <div class="panel">
+        <div class="bar"><i></i><i></i><i></i><span>MAXIMA / OS — CLIENT DASHBOARD</span></div>
+        <div class="screen">
+          <div class="ring">87%</div>
+          <div class="bars">
+            <i style="--w:.92"></i><i style="--w:.74"></i><i style="--w:.86"></i>
+            <i style="--w:.55"></i><i style="--w:.68"></i>
+          </div>
+        </div>
+      </div>
+      <p class="caption cap-1"><b>Every engagement gets a live dashboard.</b> Scope, velocity, and spend — no status-meeting theater.</p>
+      <p class="caption cap-2"><b>Your scroll is the playhead.</b> The panel tilts up from the table as you move.</p>
+      <p class="caption cap-3"><b>Keep going.</b> The work is just below.</p>
+    </div>
+  </section>
+
+  <!-- ============ SERVICES ============ -->
+  <section class="block" id="services">
+    <div class="kicker"><span class="no">01</span><h2>What we do</h2></div>
+    <p class="intro">Six practices, one team. Hover the cards — they tilt toward you and a spotlight chases your cursor.</p>
+    <div class="grid">
+      <article class="card reveal">
+        <span class="tag">BRAND</span>
+        <h3>Brand systems</h3>
+        <p>Identity, voice, and a token-driven design system that survives contact with real product teams. Logos are the last 5%.</p>
+        <a class="more" href="#contact">EXPLORE →</a>
+      </article>
+      <article class="card reveal">
+        <span class="tag">ENGINEERING</span>
+        <h3>Product engineering</h3>
+        <p>Full-stack web and mobile builds — TypeScript, edge-first, tested. We ship to production, not to a handoff deck.</p>
+        <a class="more" href="#contact">EXPLORE →</a>
+      </article>
+      <article class="card reveal">
+        <span class="tag">AI</span>
+        <h3>AI integration</h3>
+        <p>Agents, copilots, and retrieval pipelines wired into your actual workflows — with evals, guardrails, and a rollback plan.</p>
+        <a class="more" href="#contact">EXPLORE →</a>
+      </article>
+      <article class="card reveal">
+        <span class="tag">MOTION</span>
+        <h3>Motion &amp; interaction</h3>
+        <p>Scroll-native storytelling, micro-interactions, and launch films. The comet on this page is the portfolio piece.</p>
+        <a class="more" href="#contact">EXPLORE →</a>
+      </article>
+      <article class="card reveal">
+        <span class="tag">COMMERCE</span>
+        <h3>Commerce</h3>
+        <p>DTC storefronts and subscription engines tuned for conversion — headless where it pays, boring where it doesn't.</p>
+        <a class="more" href="#contact">EXPLORE →</a>
+      </article>
+      <article class="card reveal">
+        <span class="tag">DATA</span>
+        <h3>Data &amp; analytics</h3>
+        <p>Dashboards your executives actually open. Warehouse modeling, attribution, and the instrumentation to trust it.</p>
+        <a class="more" href="#contact">EXPLORE →</a>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ STATS ============ -->
+  <div class="stats" aria-label="Studio stats">
+    <div class="stat"><b style="--target:128" data-suffix="+"></b><span>Products shipped</span></div>
+    <div class="stat"><b style="--target:14" data-suffix=" yrs"></b><span>In business</span></div>
+    <div class="stat"><b style="--target:38" data-suffix=""></b><span>Specialists</span></div>
+    <div class="stat"><b style="--target:97" data-suffix="%"></b><span>Client retention</span></div>
+  </div>
+
+  <!-- ============ PROCESS ============ -->
+  <section class="block" id="process">
+    <div class="kicker"><span class="no">02</span><h2>How a project runs</h2></div>
+    <p class="intro">Four phases, in order — each underline draws itself as the step scrolls into view.</p>
+    <div class="process">
+      <div class="step reveal">
+        <span class="num">01</span>
+        <div>
+          <h3>Signal</h3>
+          <p>A two-week diagnostic. We interview your customers, audit the stack, and find the one move that changes your trajectory — before anyone opens a design tool.</p>
+          <span class="dur">2 WEEKS · FIXED FEE</span>
+        </div>
+      </div>
+      <div class="step reveal">
+        <span class="num">02</span>
+        <div>
+          <h3>Shape</h3>
+          <p>Brand direction, system architecture, and a clickable prototype tested with real users. You approve a thing you can touch, not a slide about a thing.</p>
+          <span class="dur">3–4 WEEKS</span>
+        </div>
+      </div>
+      <div class="step reveal">
+        <span class="num">03</span>
+        <div>
+          <h3>Ship</h3>
+          <p>Weekly releases to production from day one. Design and engineering sit in the same standup; the dashboard you saw above tracks every sprint.</p>
+          <span class="dur">6–12 WEEKS</span>
+        </div>
+      </div>
+      <div class="step reveal">
+        <span class="num">04</span>
+        <div>
+          <h3>Scale</h3>
+          <p>Post-launch growth loop: instrumentation, A/B cadence, and a quarterly roadmap. Most clients move to a retainer here — see pricing below.</p>
+          <span class="dur">ONGOING</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ WORK ============ -->
+  <section class="block" id="work">
+    <div class="kicker"><span class="no">03</span><h2>Selected work</h2></div>
+    <p class="intro">Three engagements that show the range. Art panels are generated in pure CSS — swap in your imagery and ship.</p>
+
+    <article class="case reveal">
+      <div class="case-art"><div class="fill f-halcyon"><span class="wordmark">Halcyon</span></div></div>
+      <div class="case-copy">
+        <span class="tag">FINTECH · BRAND + PLATFORM</span>
+        <h3>Rebuilding trust at 40,000 accounts</h3>
+        <p>Halcyon's treasury platform was losing enterprise deals to a dated interface and a six-week onboarding. We rebuilt the design system, the onboarding flow, and the underlying account-provisioning service in one engagement.</p>
+        <div class="result">
+          <div><b>−83%</b><span>Onboarding time</span></div>
+          <div><b>2.4×</b><span>Enterprise close rate</span></div>
+        </div>
+        <a class="btn ghost" href="#contact">READ THE CASE STUDY</a>
+      </div>
+    </article>
+
+    <article class="case reveal">
+      <div class="case-art"><div class="fill f-oro"><span class="wordmark">ORO</span></div></div>
+      <div class="case-copy">
+        <span class="tag">DTC · COMMERCE + MOTION</span>
+        <h3>A coffee brand that pours on scroll</h3>
+        <p>ORO needed a flagship store that tasted like the product. We built a scroll-driven brewing sequence, a subscription engine with pause-don't-cancel mechanics, and a packaging system to match.</p>
+        <div class="result">
+          <div><b>+61%</b><span>Subscription starts</span></div>
+          <div><b>38s</b><span>Avg. time on hero</span></div>
+        </div>
+        <a class="btn ghost" href="#contact">READ THE CASE STUDY</a>
+      </div>
+    </article>
+
+    <article class="case reveal">
+      <div class="case-art"><div class="fill f-vanta"><span class="wordmark">Vanta H.</span></div></div>
+      <div class="case-copy">
+        <span class="tag">HEALTH · AI + PRODUCT</span>
+        <h3>An intake agent that clinicians trust</h3>
+        <p>Vanta Health's care teams were drowning in intake forms. We shipped a HIPAA-aligned AI intake assistant with human-in-the-loop review, plus the dashboard that lets clinicians audit every suggestion.</p>
+        <div class="result">
+          <div><b>−12 hrs</b><span>Admin per clinician / wk</span></div>
+          <div><b>99.2%</b><span>Review agreement rate</span></div>
+        </div>
+        <a class="btn ghost" href="#contact">READ THE CASE STUDY</a>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ TESTIMONIALS ============ -->
+  <section class="block" id="quotes">
+    <div class="kicker"><span class="no">04</span><h2>What clients say</h2></div>
+    <p class="intro">Drag sideways — the carousel snaps, and yes, its scrollbar is designed too.</p>
+    <div class="quotes" tabindex="0" aria-label="Client testimonials, scroll horizontally">
+      <figure class="quote">
+        <blockquote>They found the real problem in week one — it wasn't the one in our RFP. Then they fixed that instead. Best money we've spent.</blockquote>
+        <figcaption class="who"><i aria-hidden="true"></i><div><b>Dana Okafor</b><span>COO · HALCYON</span></div></figcaption>
+      </figure>
+      <figure class="quote">
+        <blockquote>Our launch page held a 38-second average on the hero. People were scrolling it like a music video. Revenue followed.</blockquote>
+        <figcaption class="who"><i aria-hidden="true"></i><div><b>Marcus Lee</b><span>FOUNDER · ORO COFFEE</span></div></figcaption>
+      </figure>
+      <figure class="quote">
+        <blockquote>The first AI vendor whose demo survived contact with our compliance team. Evals, audit trails, rollback — they came prepared.</blockquote>
+        <figcaption class="who"><i aria-hidden="true"></i><div><b>Dr. Priya Raman</b><span>CMO · VANTA HEALTH</span></div></figcaption>
+      </figure>
+      <figure class="quote">
+        <blockquote>Design and engineering in the same standup sounds small. It's not. We shipped in nine weeks what the last agency scoped at nine months.</blockquote>
+        <figcaption class="who"><i aria-hidden="true"></i><div><b>Sofia Reyes</b><span>VP PRODUCT · NORTHWIND</span></div></figcaption>
+      </figure>
+    </div>
+    <p class="drag-hint">← DRAG OR SCROLL SIDEWAYS →</p>
+  </section>
+
+  <!-- ============ PRICING ============ -->
+  <section class="block" id="pricing">
+    <div class="kicker"><span class="no">05</span><h2>Engagement models</h2></div>
+    <p class="intro">Transparent pricing, no procurement maze. Every model includes the live client dashboard.</p>
+    <div class="tiers">
+      <div class="tier reveal">
+        <span class="name">Sprint</span>
+        <div class="price">$14k<small> / 2-WEEK SIGNAL</small></div>
+        <ul>
+          <li>Customer + stakeholder interviews</li>
+          <li>Stack and brand audit</li>
+          <li>Prioritized opportunity map</li>
+          <li>Prototype of the highest-leverage move</li>
+        </ul>
+        <a class="btn ghost" href="#contact">BOOK A SPRINT</a>
+      </div>
+      <div class="tier featured reveal">
+        <span class="name">Studio Retainer</span>
+        <div class="price">$28k<small> / MONTH · 3-MO MIN</small></div>
+        <ul>
+          <li>Dedicated pod: design + 2 engineers + PM</li>
+          <li>Weekly production releases</li>
+          <li>Motion, brand, and AI work in-scope</li>
+          <li>Quarterly roadmap + growth reviews</li>
+          <li>48-hour hotfix SLA</li>
+        </ul>
+        <a class="btn solid" href="#contact">TALK TO US</a>
+      </div>
+      <div class="tier reveal">
+        <span class="name">Embedded</span>
+        <div class="price">Custom<small> · LEADERSHIP-LEVEL</small></div>
+        <ul>
+          <li>Fractional CTO / Head of Design</li>
+          <li>Hiring and team build-out</li>
+          <li>Architecture and vendor strategy</li>
+          <li>Board-ready reporting</li>
+        </ul>
+        <a class="btn ghost" href="#contact">START A CONVERSATION</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TEAM ============ -->
+  <section class="block" id="team">
+    <div class="kicker"><span class="no">06</span><h2>The people</h2></div>
+    <p class="intro">Thirty-eight specialists; here's the leadership bench. Gradient portraits are placeholders — drop real photography into the tiles.</p>
+    <div class="team">
+      <div class="person reveal"><div class="face">AV</div><div class="meta"><b>Ari Vance</b><span>Founder · Principal</span></div></div>
+      <div class="person reveal"><div class="face">JM</div><div class="meta"><b>June Moreno</b><span>Head of Design</span></div></div>
+      <div class="person reveal"><div class="face">KT</div><div class="meta"><b>Kofi Tetteh</b><span>Head of Engineering</span></div></div>
+      <div class="person reveal"><div class="face">LS</div><div class="meta"><b>Lena Sato</b><span>AI Practice Lead</span></div></div>
+      <div class="person reveal"><div class="face">RD</div><div class="meta"><b>Rio Delgado</b><span>Motion Director</span></div></div>
+      <div class="person reveal"><div class="face">EW</div><div class="meta"><b>Esme Walker</b><span>Head of Strategy</span></div></div>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="block" id="faq">
+    <div class="kicker"><span class="no">07</span><h2>Questions, answered</h2></div>
+    <p class="intro">The accordion animates open with native CSS — <code style="font-family: var(--font-mono); font-size:.75em">::details-content</code> plus interpolated <code style="font-family: var(--font-mono); font-size:.75em">height: auto</code>. No JavaScript.</p>
+    <div class="faq">
+      <details>
+        <summary>How fast can we start?</summary>
+        <div class="a">Signal sprints typically kick off within two weeks of a signed SOW. Retainer pods book one quarter ahead — the marquee up top shows current availability.</div>
+      </details>
+      <details>
+        <summary>Do you work with in-house teams or replace them?</summary>
+        <div class="a">With, almost always. Our pods plug into your standups and your repo. The Embedded model exists for companies that want us to help build the in-house team itself.</div>
+      </details>
+      <details>
+        <summary>Who owns the work?</summary>
+        <div class="a">You do — code, design files, brand assets, and the documentation to run them. We keep nothing hostage, including the hosting.</div>
+      </details>
+      <details>
+        <summary>Can you handle regulated industries?</summary>
+        <div class="a">Yes. We've shipped HIPAA-aligned health platforms and SOC 2-scoped fintech. Compliance review is part of Shape, not a surprise during Ship.</div>
+      </details>
+      <details>
+        <summary>What stack do you build on?</summary>
+        <div class="a">TypeScript end to end as the default — with the judgment to deviate when your context demands it. We choose boring infrastructure and spend the novelty budget on the experience layer, like this page does.</div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============ JOURNAL ============ -->
+  <section class="block" id="journal">
+    <div class="kicker"><span class="no">08</span><h2>From the journal</h2></div>
+    <p class="intro">Notes from the studio floor — process, postmortems, and the occasional hot take.</p>
+    <div class="posts">
+      <a class="post reveal" href="#journal">
+        <div class="cover"></div>
+        <div class="body">
+          <span class="date">JUN 02, 2026</span>
+          <h3>Scroll is the new timeline</h3>
+          <p>Why we stopped reaching for animation libraries and started treating the scrollbar as a playhead.</p>
+        </div>
+      </a>
+      <a class="post reveal" href="#journal">
+        <div class="cover"></div>
+        <div class="body">
+          <span class="date">MAY 19, 2026</span>
+          <h3>The eval is the product</h3>
+          <p>An AI feature without an evaluation harness is a demo. How we score agents before clinicians ever see them.</p>
+        </div>
+      </a>
+      <a class="post reveal" href="#journal">
+        <div class="cover"></div>
+        <div class="body">
+          <span class="date">MAY 05, 2026</span>
+          <h3>Death of the status meeting</h3>
+          <p>Inside the client dashboard: the live scope, velocity, and spend view that replaced our weekly check-in calls.</p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ CTA BANNER ============ -->
+  <section class="banner reveal" id="cta">
+    <h2>Ready to move?</h2>
+    <p>Tell us what's stuck. We'll tell you the one move that changes your trajectory — and exactly what it costs to make it.</p>
+    <a class="btn solid magnet" href="#contact">START A PROJECT</a>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section class="block" id="contact">
+    <div class="kicker"><span class="no">09</span><h2>Start a project</h2></div>
+    <div class="contact">
+      <div class="info">
+        <p>Two-minute form, real reply within one business day from a principal — not a sales sequence. Prefer email or a call? Direct lines below.</p>
+        <div class="line"><span>Email</span><a href="mailto:hello@maxima.studio">hello@maxima.studio</a></div>
+        <div class="line"><span>Phone</span><a href="tel:+16025550127">+1 (602) 555-0127</a></div>
+        <div class="line"><span>Studio</span><b>411 Roosevelt Row, Phoenix AZ</b></div>
+        <div class="line"><span>Hours</span><b>Mon–Fri · 9–6 MST</b></div>
+      </div>
+      <form class="lead" id="lead">
+        <div class="row">
+          <label>Name<input type="text" name="name" required placeholder="Ada Lovelace"></label>
+          <label>Email<input type="email" name="email" required placeholder="ada@company.com"></label>
+        </div>
+        <div class="row">
+          <label>Company<input type="text" name="company" placeholder="Analytical Engines Inc."></label>
+          <label>Budget
+            <select name="budget">
+              <option>$14k sprint</option>
+              <option selected>$25–50k</option>
+              <option>$50–150k</option>
+              <option>$150k+</option>
+            </select>
+          </label>
+        </div>
+        <label>What's stuck?<textarea name="message" placeholder="Tell us about the project, the deadline, and what's blocking it…"></textarea></label>
+        <button class="btn solid magnet" type="submit">SEND IT</button>
+        <span class="sent">✓ RECEIVED — A PRINCIPAL WILL REPLY WITHIN ONE BUSINESS DAY</span>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ THEME FLIP ============ -->
+  <section class="block" style="text-align:center; display:grid; justify-items:center; gap:1.2rem;">
+    <h2 style="font-size: clamp(1.8rem, 4.5vw, 3.2rem); font-weight: 780;">One more trick</h2>
+    <p style="color: var(--sand-dim); max-width: 50ch; margin: 0;">Theme changes run through the View Transitions API — one composited crossfade of the whole document. The comet swaps blend modes to burn dark against the light.</p>
+    <button class="btn solid magnet" id="flip">FLIP THE THEME</button>
+  </section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="site">
+  <div class="foot-grid">
+    <div class="about">
+      <a class="logo" href="#top" style="font-family: var(--font-display); font-weight:800; font-size:1.3rem; color:var(--sand); text-decoration:none;">MAXIMA<span style="color:var(--vermilion)">.</span></a>
+      <p>A creative technology studio building brands, products, and AI platforms that move. Independent since 2012.</p>
+    </div>
+    <div>
+      <h4>Studio</h4>
+      <ul>
+        <li><a href="#work">Work</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#process">Process</a></li>
+        <li><a href="#team">Team</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Engage</h4>
+      <ul>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#journal">Journal</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="maxima-lab.html">Component Lab ↗</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Dispatch</h4>
+      <div class="news">
+        <input type="email" placeholder="you@company.com" aria-label="Email for newsletter">
+        <button class="btn ghost" type="button" onclick="this.textContent='✓ SUBSCRIBED'">SUBSCRIBE</button>
+      </div>
+    </div>
+  </div>
+  <div class="foot-mark" aria-hidden="true">MAXIMA</div>
+  <div class="foot-legal">
+    <span>© 2026 MAXIMA STUDIO LLC</span>
+    <span>ONE FILE · ZERO DEPENDENCIES · BEST IN CHROME/EDGE 121+</span>
+    <a href="#top">BACK TO TOP ↑</a>
+  </div>
+</footer>
+
+<script>
+  /* ---- comet flight path: waypoint list drives the dot's
+         offset-path. Rebuilt on
+         resize so the ricochet stays proportional to the screen. ---- */
+  const WAYPOINTS = [
+    [8,18],[86,30],[40,8],[6,55],[70,82],[90,38],
+    [30,10],[10,70],[60,28],[88,72],[22,40],[47,47]
+  ]; /* [x % of width, y % of height] */
+  function layoutComet() {
+    const w = innerWidth, h = innerHeight;
+    const pts = WAYPOINTS.map(([x, y]) => [(x / 100) * w, (y / 100) * h]);
+    const d = 'M ' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L ');
+    const op = 'path("' + d + '")';
+    document.querySelector('.comet').style.offsetPath = op;
+    document.querySelector('.comet-trail').style.offsetPath = op;
+    document.querySelector('.comet-field').dataset.ready = '';
+  }
+  if (CSS.supports('animation-timeline: scroll()') &&
+      !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    layoutComet();
+    addEventListener('resize', layoutComet);
+  }
+
+  /* ---- theme flip via View Transitions ---- */
+  const flip = document.getElementById('flip');
+  const root = document.documentElement;
+  function toggle() {
+    root.dataset.theme = root.dataset.theme === 'ink' ? 'solar' : 'ink';
+    flip.textContent = root.dataset.theme === 'ink' ? 'FLIP THE THEME' : 'FLIP IT BACK';
+  }
+  flip.addEventListener('click', () => {
+    if (document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.startViewTransition(toggle);
+    } else toggle();
+  });
+
+  /* ---- contact form (demo handler — wire to your backend) ---- */
+  document.getElementById('lead').addEventListener('submit', e => {
+    e.preventDefault();
+    e.target.classList.add('is-sent');
+  });
+
+  /* ---- close mobile menu on nav click ---- */
+  document.querySelectorAll('header.site nav a').forEach(a =>
+    a.addEventListener('click', () => { document.getElementById('menu').checked = false; })
+  );
+
+  /* ---- spotlight + 3D tilt on cards ---- */
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduce) {
+    document.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('pointermove', e => {
+        const r = card.getBoundingClientRect();
+        const x = e.clientX - r.left, y = e.clientY - r.top;
+        card.style.setProperty('--mx', x + 'px');
+        card.style.setProperty('--my', y + 'px');
+        card.style.setProperty('--ry', ((x / r.width) - .5) * 10 + 'deg');
+        card.style.setProperty('--rx', (.5 - (y / r.height)) * 8 + 'deg');
+      });
+      card.addEventListener('pointerleave', () => {
+        card.style.setProperty('--rx', '0deg');
+        card.style.setProperty('--ry', '0deg');
+      });
+    });
+
+    /* ---- magnetic buttons ---- */
+    document.querySelectorAll('.magnet').forEach(btn => {
+      btn.addEventListener('pointermove', e => {
+        const r = btn.getBoundingClientRect();
+        const dx = e.clientX - (r.left + r.width / 2);
+        const dy = e.clientY - (r.top + r.height / 2);
+        btn.style.translate = (dx * .18) + 'px ' + (dy * .25) + 'px';
+      });
+      btn.addEventListener('pointerleave', () => { btn.style.translate = '0 0'; });
+    });
+  }
+</script>
+
+</body>
+</html>
